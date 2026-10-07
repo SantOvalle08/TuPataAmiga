@@ -25,8 +25,7 @@ fun AppNavigation() {
         composable(MainRoutes.Home.route) {
             HomeScreen(
                 onNavigateLogin = { navController.navigate(MainRoutes.Login.route) },
-                onNavigateRegister = { navController.navigate(MainRoutes.Register.route) },
-                onNavigateFeed = { navController.navigate(MainRoutes.Dashboard.route) }
+                onNavigateRegister = { navController.navigate(MainRoutes.Register.route) }
             )
         }
         composable(MainRoutes.Login.route) {
