@@ -24,6 +24,14 @@ class CreateViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CreateUiState())
     val uiState: StateFlow<CreateUiState> = _uiState.asStateFlow()
 
+    // Imagen aleatoria de Unsplash para cumplir el requisito de la entrega
+    private val randomImages = listOf(
+        "https://images.unsplash.com/photo-1543466835-00a7907e9de1",
+        "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
+        "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e",
+        "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2"
+    )
+
     fun onNombreChanged(nombre: String) {
         _uiState.update { it.copy(nombre = nombre) }
     }
@@ -40,21 +48,44 @@ class CreateViewModel @Inject constructor(
         _uiState.update { it.copy(estado = estado) }
     }
 
-    fun createMascota(onSuccess: () -> Unit) {
+    fun createMascota(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val state = _uiState.value
+
+        if (state.nombre.isBlank()) {
+            onError("Ingresa el nombre de la mascota")
+            return
+        }
+        if (state.descripcion.isBlank()) {
+            onError("Ingresa una descripción")
+            return
+        }
+
         viewModelScope.launch {
-            val state = _uiState.value
-            val mascota = Mascota(
-                id = UUID.randomUUID().toString(),
-                nombre = state.nombre,
-                categoria = state.categoria,
-                nivel = Nivel.MEDIO,
-                estado = state.estado,
-                descripcion = state.descripcion,
-                imagenUrl = "",
-                usuarioId = "user1"
-            )
-            createMascotaUseCase(mascota)
-            onSuccess()
+            try {
+                _uiState.update { it.copy(isLoading = true) }
+
+                val mascota = Mascota(
+                    id = UUID.randomUUID().toString(),
+                    nombre = state.nombre,
+                    categoria = state.categoria,
+                    nivel = Nivel.MEDIO,
+                    estado = state.estado,
+                    descripcion = state.descripcion,
+                    imagenUrl = randomImages.random(),
+                    usuarioId = "user1"
+                )
+
+                createMascotaUseCase(mascota)
+
+                _uiState.update { it.copy(isLoading = false) }
+                onSuccess()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false) }
+                onError(e.localizedMessage ?: "Ocurrió un error al guardar")
+            }
         }
     }
 }
@@ -63,5 +94,6 @@ data class CreateUiState(
     val nombre: String = "",
     val descripcion: String = "",
     val categoria: Categoria = Categoria.PERRO,
-    val estado: EstadoPublicacion = EstadoPublicacion.PERDIDO
+    val estado: EstadoPublicacion = EstadoPublicacion.PERDIDO,
+    val isLoading: Boolean = false
 )
