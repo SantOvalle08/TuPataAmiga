@@ -28,9 +28,34 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Estados para los errores visuales de cada campo
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     val backgroundColor = Color(0xFFF6FBF7)
     val brandGreen = Color(0xFF0F4C25)
     val fieldBg = Color(0xFFE8F5E9)
+
+    // Validar reglas básicas antes de consultar el servidor
+    fun validarFormulario(): Boolean {
+        var esValido = true
+
+        if (!uiState.correo.contains("@")) {
+            emailError = "El correo debe incluir un '@'"
+            esValido = false
+        } else {
+            emailError = null
+        }
+
+        if (uiState.clave.length < 8) {
+            passwordError = "La contraseña debe tener al menos 8 caracteres"
+            esValido = false
+        } else {
+            passwordError = null
+        }
+
+        return esValido
+    }
 
     Column(
         modifier = Modifier
@@ -84,6 +109,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Campo Correo electrónico
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     text = "Correo electrónico",
@@ -93,20 +119,35 @@ fun LoginScreen(
                 )
                 TextField(
                     value = uiState.correo,
-                    onValueChange = viewModel::onCorreoChanged,
+                    onValueChange = {
+                        viewModel.onCorreoChanged(it)
+                        if (emailError != null) emailError = null
+                    },
                     modifier = Modifier.fillMaxWidth(),
+                    isError = emailError != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = fieldBg,
                         unfocusedContainerColor = fieldBg,
                         disabledContainerColor = fieldBg,
+                        errorContainerColor = fieldBg,
                         focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
+                        unfocusedIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = MaterialTheme.colorScheme.error
                     ),
                     singleLine = true
                 )
+                if (emailError != null) {
+                    Text(
+                        text = emailError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                    )
+                }
             }
 
+            // Campo Contraseña
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     text = "Contraseña",
@@ -116,19 +157,33 @@ fun LoginScreen(
                 )
                 TextField(
                     value = uiState.clave,
-                    onValueChange = viewModel::onClaveChanged,
+                    onValueChange = {
+                        viewModel.onClaveChanged(it)
+                        if (passwordError != null) passwordError = null
+                    },
                     modifier = Modifier.fillMaxWidth(),
+                    isError = passwordError != null,
                     visualTransformation = PasswordVisualTransformation(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = fieldBg,
                         unfocusedContainerColor = fieldBg,
                         disabledContainerColor = fieldBg,
+                        errorContainerColor = fieldBg,
                         focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
+                        unfocusedIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = MaterialTheme.colorScheme.error
                     ),
                     singleLine = true
                 )
+                if (passwordError != null) {
+                    Text(
+                        text = passwordError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                    )
+                }
             }
         }
 
@@ -157,10 +212,27 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                viewModel.login(
-                    onSuccess = onLoginSuccess,
-                    onError = { errorMessage = it }
-                )
+                if (validarFormulario()) {
+                    errorMessage = null
+                    viewModel.login(
+                        onSuccess = onLoginSuccess,
+                        onError = { error ->
+                            val msg = error.lowercase()
+                            when {
+                                msg.contains("correo") || msg.contains("user") || msg.contains("usuario") -> {
+                                    emailError = "El correo electrónico es incorrecto o no existe"
+                                }
+                                msg.contains("clave") || msg.contains("contraseña") || msg.contains("password") -> {
+                                    passwordError = "La contraseña es incorrecta"
+                                }
+                                else -> {
+                                    emailError = "Correo o contraseña incorrectos"
+                                    passwordError = "Correo o contraseña incorrectos"
+                                }
+                            }
+                        }
+                    )
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
