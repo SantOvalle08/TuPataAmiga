@@ -24,7 +24,6 @@ class CreateViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CreateUiState())
     val uiState: StateFlow<CreateUiState> = _uiState.asStateFlow()
 
-    // Imagen aleatoria de Unsplash para cumplir el requisito de la entrega
     private val randomImages = listOf(
         "https://images.unsplash.com/photo-1543466835-00a7907e9de1",
         "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
@@ -34,6 +33,10 @@ class CreateViewModel @Inject constructor(
 
     fun onNombreChanged(nombre: String) {
         _uiState.update { it.copy(nombre = nombre) }
+    }
+
+    fun onRazaChanged(raza: String) {
+        _uiState.update { it.copy(raza = raza) }
     }
 
     fun onDescripcionChanged(descripcion: String) {
@@ -48,6 +51,18 @@ class CreateViewModel @Inject constructor(
         _uiState.update { it.copy(estado = estado) }
     }
 
+    fun onTamanoChanged(tamano: String) {
+        _uiState.update { it.copy(tamano = tamano) }
+    }
+
+    fun onVacunasChanged(tieneVacunas: Boolean) {
+        _uiState.update { it.copy(tieneVacunas = tieneVacunas) }
+    }
+
+    fun onUbicacionChanged(ubicacion: String) {
+        _uiState.update { it.copy(ubicacion = ubicacion) }
+    }
+
     fun createMascota(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
@@ -55,7 +70,7 @@ class CreateViewModel @Inject constructor(
         val state = _uiState.value
 
         if (state.nombre.isBlank()) {
-            onError("Ingresa el nombre de la mascota")
+            onError("Ingresa el título o nombre de la mascota")
             return
         }
         if (state.descripcion.isBlank()) {
@@ -92,8 +107,12 @@ class CreateViewModel @Inject constructor(
 
 data class CreateUiState(
     val nombre: String = "",
+    val raza: String = "",
     val descripcion: String = "",
+    val tamano: String = "Mediano",
+    val tieneVacunas: Boolean = true,
+    val ubicacion: String = "El Bosque, Armenia",
     val categoria: Categoria = Categoria.PERRO,
-    val estado: EstadoPublicacion = EstadoPublicacion.PERDIDO,
+    val estado: EstadoPublicacion = EstadoPublicacion.ADOPCION,
     val isLoading: Boolean = false
 )

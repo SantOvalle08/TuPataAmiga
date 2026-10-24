@@ -8,9 +8,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,29 +34,13 @@ fun DetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val brandGreen = Color(0xFF0F4C25)
+    val fieldBg = Color(0xFFE8F5E9)
+
+    val mascota = uiState.mascota
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Detalle de Mascota", fontWeight = FontWeight.Bold, color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = brandGreen,
-                    titleContentColor = Color.White
-                )
-            )
-        }
+        containerColor = Color(0xFFF6FBF7)
     ) { padding ->
-        val mascota = uiState.mascota
-
         if (mascota == null) {
             Box(
                 modifier = Modifier
@@ -69,161 +55,224 @@ fun DetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .background(Color(0xFFF6FBF7))
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
-                // Main Header Card
+                // Top Media Banner Container with Overlaid Action Icons
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(fieldBg),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Pets,
+                        contentDescription = null,
+                        tint = brandGreen,
+                        modifier = Modifier.size(80.dp)
+                    )
+
+                    // Top Action Overlay Buttons
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                            .align(Alignment.TopStart),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        IconButton(
+                            onClick = onBack,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.9f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Volver",
+                                tint = Color.Black
+                            )
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            IconButton(
+                                onClick = { },
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.9f))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "Compartir",
+                                    tint = Color.Black
+                                )
+                            }
+                            IconButton(
+                                onClick = { },
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.9f))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.BookmarkBorder,
+                                    contentDescription = "Guardar",
+                                    tint = Color.Black
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Badges Line: Estado & Verificado
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val (badgeBg, badgeFg) = when (mascota.estado) {
+                        EstadoPublicacion.PERDIDO -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+                        EstadoPublicacion.ADOPCION -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                        EstadoPublicacion.ENCONTRADO -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                    }
+
+                    Surface(
+                        color = badgeBg,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = mascota.estado.name.lowercase().replaceFirstChar { it.uppercase() },
+                            color = badgeFg,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Verificado",
+                            tint = Color(0xFF1E88E5),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Verificado",
+                            color = Color(0xFF1E88E5),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Title
+                Text(
+                    text = "${mascota.nombre} busca un hogar amoroso",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        fontSize = 22.sp
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Author Header Line
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(brandGreen),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "CH", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "Carlos Herrera",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = "hace 2 horas",
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Metadata Grid Box (2x2)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = fieldBg)
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(52.dp)
-                                        .clip(CircleShape)
-                                        .background(brandGreen.copy(alpha = 0.12f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Pets,
-                                        contentDescription = null,
-                                        tint = brandGreen,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Column {
-                                    Text(
-                                        text = mascota.nombre,
-                                        style = MaterialTheme.typography.headlineSmall.copy(
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
-                                    Text(
-                                        text = "Categoría: ${mascota.categoria.name}",
-                                        fontSize = 14.sp,
-                                        color = Color.Gray
-                                    )
-                                }
-                            }
-
-                            // State Badge
-                            val (badgeBg, badgeFg) = when (mascota.estado) {
-                                EstadoPublicacion.PERDIDO -> Color(0xFFFFEBEE) to Color(0xFFC62828)
-                                EstadoPublicacion.ADOPCION -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-                                EstadoPublicacion.ENCONTRADO -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
-                            }
-
-                            Surface(
-                                color = badgeBg,
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = "Tipo", fontSize = 11.sp, color = Color.Gray)
                                 Text(
-                                    text = mascota.estado.name,
-                                    color = badgeFg,
+                                    text = "🐕 ${mascota.categoria.name.lowercase().replaceFirstChar { it.uppercase() }}",
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                    fontSize = 14.sp
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = "Raza", fontSize = 11.sp, color = Color.Gray)
+                                Text(
+                                    text = "Labrador",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.4f))
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        // Additional Info Badges
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            InfoBadge(label = "Nivel", value = mascota.nivel.name)
-                            InfoBadge(label = "Categoría", value = mascota.categoria.name)
-                            InfoBadge(label = "Publicante ID", value = mascota.usuarioId)
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = "Tamaño", fontSize = 11.sp, color = Color.Gray)
+                                Text(
+                                    text = "Grande",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = "Vacunas", fontSize = 11.sp, color = Color.Gray)
+                                Text(
+                                    text = "✅ Al día",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Description Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Text(
-                            text = "Descripción de la Mascota",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = brandGreen
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = mascota.descripcion,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.DarkGray,
-                            lineHeight = 22.sp
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // User Info Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFE8F5E9)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                tint = brandGreen
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = "Publicado por",
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = "Usuario Registrado (${mascota.usuarioId})",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
-                            )
-                        }
-                    }
-                }
+                // Description Text
+                Text(
+                    text = mascota.descripcion,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 14.sp,
+                        color = Color.DarkGray,
+                        lineHeight = 22.sp
+                    )
+                )
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // Delete Action Button
+                // Action Buttons
                 Button(
                     onClick = { showDeleteDialog = true },
                     modifier = Modifier
@@ -247,7 +296,6 @@ fun DetailScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Back Button
                 OutlinedButton(
                     onClick = onBack,
                     modifier = Modifier
@@ -255,7 +303,7 @@ fun DetailScreen(
                         .height(50.dp),
                     shape = RoundedCornerShape(25.dp)
                 ) {
-                    Text("Volver al Feed")
+                    Text("Volver al Feed", color = brandGreen, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -283,14 +331,5 @@ fun DetailScreen(
                 }
             }
         )
-    }
-}
-
-@Composable
-private fun InfoBadge(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, fontSize = 11.sp, color = Color.Gray)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
     }
 }

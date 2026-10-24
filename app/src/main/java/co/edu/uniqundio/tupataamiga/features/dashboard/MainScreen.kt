@@ -19,7 +19,7 @@ fun MainScreen(
     onMascotaClick: (String) -> Unit
 ) {
     val navController = rememberNavController()
-    var currentDestination by remember { mutableStateOf(DashboardDestination.FEED) }
+    var currentDestination by remember { mutableStateOf(DashboardDestination.INICIO) }
     val feedViewModel: FeedViewModel = hiltViewModel()
     val createViewModel: CreateViewModel = hiltViewModel()
 
@@ -31,10 +31,18 @@ fun MainScreen(
                 onDestinationSelected = { destination ->
                     currentDestination = destination
                     when (destination) {
-                        DashboardDestination.FEED -> navController.navigate(DashboardRoutes.Feed.route) {
+                        DashboardDestination.INICIO -> navController.navigate(DashboardRoutes.Feed.route) {
                             popUpTo(DashboardRoutes.Feed.route) { inclusive = true }
                         }
-                        DashboardDestination.CREATE -> navController.navigate(DashboardRoutes.Create.route)
+                        DashboardDestination.MAPA -> navController.navigate(DashboardRoutes.Map.route) {
+                            popUpTo(DashboardRoutes.Feed.route)
+                        }
+                        DashboardDestination.ALERTAS -> navController.navigate(DashboardRoutes.Alerts.route) {
+                            popUpTo(DashboardRoutes.Feed.route)
+                        }
+                        DashboardDestination.PERFIL -> navController.navigate(DashboardRoutes.Profile.route) {
+                            popUpTo(DashboardRoutes.Feed.route)
+                        }
                     }
                 }
             )
