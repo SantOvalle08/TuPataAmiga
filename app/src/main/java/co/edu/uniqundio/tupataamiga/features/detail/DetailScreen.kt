@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
