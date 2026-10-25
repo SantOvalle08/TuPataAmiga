@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +34,10 @@ fun DetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var isBookmarked by remember { mutableStateOf(false) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val brandGreen = Color(0xFF0F4C25)
     val fieldBg = Color(0xFFE8F5E9)
@@ -39,6 +45,7 @@ fun DetailScreen(
     val mascota = uiState.mascota
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color(0xFFF6FBF7)
     ) { padding ->
         if (mascota == null) {
@@ -97,7 +104,11 @@ fun DetailScreen(
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             IconButton(
-                                onClick = { },
+                                onClick = {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Enlace copiado al portapapeles")
+                                    }
+                                },
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(Color.White.copy(alpha = 0.9f))
@@ -109,15 +120,22 @@ fun DetailScreen(
                                 )
                             }
                             IconButton(
-                                onClick = { },
+                                onClick = {
+                                    isBookmarked = !isBookmarked
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            if (isBookmarked) "Guardado en tus favoritos" else "Removido de tus favoritos"
+                                        )
+                                    }
+                                },
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(Color.White.copy(alpha = 0.9f))
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.BookmarkBorder,
+                                    imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                                     contentDescription = "Guardar",
-                                    tint = Color.Black
+                                    tint = if (isBookmarked) brandGreen else Color.Black
                                 )
                             }
                         }

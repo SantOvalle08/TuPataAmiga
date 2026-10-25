@@ -5,6 +5,9 @@ import co.edu.uniqundio.tupataamiga.domain.model.Rol
 import co.edu.uniqundio.tupataamiga.domain.model.Usuario
 import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 import org.json.JSONObject
 import javax.inject.Inject
@@ -18,8 +21,12 @@ class UserRepositoryImpl @Inject constructor(
     private val prefs = context.getSharedPreferences("user_repository_prefs", Context.MODE_PRIVATE)
     private val usuarios = mutableMapOf<String, Pair<Usuario, String>>()
 
+    private val _currentUser = MutableStateFlow<Usuario?>(null)
+    override val currentUser: StateFlow<Usuario?> = _currentUser.asStateFlow()
+
     init {
         loadUsers()
+        restoreSession()
     }
 
     private fun loadUsers() {
@@ -54,6 +61,16 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    private fun restoreSession() {
+        val activeEmail = prefs.getString("active_session_email", null)
+        if (!activeEmail.isNullOrEmpty() && activeEmail != "GUEST") {
+            val user = usuarios[activeEmail]?.first
+            _currentUser.value = user
+        } else {
+            _currentUser.value = null
+        }
+    }
+
     private fun saveUsersToDisk() {
         try {
             val array = JSONArray()
@@ -76,7 +93,10 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun login(correo: String, clave: String): Usuario? {
         val entry = usuarios[correo]
         if (entry != null && entry.second == clave) {
-            return entry.first
+            val user = entry.first
+            _currentUser.value = user
+            prefs.edit().putString("active_session_email", user.correo).apply()
+            return user
         }
         return null
     }
@@ -85,6 +105,41 @@ class UserRepositoryImpl @Inject constructor(
         if (usuarios.containsKey(usuario.correo)) return false
         usuarios[usuario.correo] = Pair(usuario, clave)
         saveUsersToDisk()
+        _currentUser.value = usuario
+        prefs.edit().putString("active_session_email", usuario.correo).apply()
+        return true
+    }
+
+    override fun setGuestSession() {
+        _currentUser.value = null
+        prefs.edit().putString("active_session_email", "GUEST").apply()
+    }
+
+    override fun logout() {
+        _currentUser.value = null
+        prefs.edit().putString("active_session_email", "GUEST").apply()
+    }
+
+    override suspend fun updateUserProfile(nombre: String, correo: String): Boolean {
+        val current = _currentUser.value ?: return false
+        val oldEmail = current.correo
+        val pwd = usuarios[oldEmail]?.second ?: "1234"
+
+        val updatedUser = current.copy(nombre = nombre, correo = correo)
+        usuarios.remove(oldEmail)
+        usuarios[correo] = Pair(updatedUser, pwd)
+        saveUsersToDisk()
+
+        _currentUser.value = updatedUser
+        prefs.edit().putString("active_session_email", correo).apply()
+        return true
+    }
+
+    override suspend fun deleteCurrentAccount(): Boolean {
+        val current = _currentUser.value ?: return false
+        usuarios.remove(current.correo)
+        saveUsersToDisk()
+        logout()
         return true
     }
 }

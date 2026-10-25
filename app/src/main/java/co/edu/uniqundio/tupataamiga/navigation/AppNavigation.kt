@@ -11,6 +11,7 @@ import co.edu.uniqundio.tupataamiga.features.dashboard.MainScreen
 import co.edu.uniqundio.tupataamiga.features.detail.DetailScreen
 import co.edu.uniqundio.tupataamiga.features.detail.DetailViewModel
 import co.edu.uniqundio.tupataamiga.features.home.HomeScreen
+import co.edu.uniqundio.tupataamiga.features.home.HomeViewModel
 import co.edu.uniqundio.tupataamiga.features.login.LoginScreen
 import co.edu.uniqundio.tupataamiga.features.login.LoginViewModel
 import co.edu.uniqundio.tupataamiga.features.recovery.RecoveryScreen
@@ -23,9 +24,16 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = MainRoutes.Home.route) {
         composable(MainRoutes.Home.route) {
+            val homeViewModel: HomeViewModel = hiltViewModel()
             HomeScreen(
                 onNavigateLogin = { navController.navigate(MainRoutes.Login.route) },
-                onNavigateRegister = { navController.navigate(MainRoutes.Register.route) }
+                onNavigateRegister = { navController.navigate(MainRoutes.Register.route) },
+                onNavigateGuest = {
+                    homeViewModel.setGuestSession()
+                    navController.navigate(MainRoutes.Dashboard.route) {
+                        popUpTo(MainRoutes.Home.route)
+                    }
+                }
             )
         }
         composable(MainRoutes.Login.route) {
@@ -34,7 +42,7 @@ fun AppNavigation() {
                 viewModel = viewModel,
                 onLoginSuccess = {
                     navController.navigate(MainRoutes.Dashboard.route) {
-                        popUpTo(MainRoutes.Home.route)
+                        popUpTo(MainRoutes.Home.route) { inclusive = true }
                     }
                 },
                 onNavigateRecovery = { navController.navigate(MainRoutes.Recovery.route) },
@@ -47,7 +55,7 @@ fun AppNavigation() {
                 viewModel = viewModel,
                 onRegisterSuccess = {
                     navController.navigate(MainRoutes.Dashboard.route) {
-                        popUpTo(MainRoutes.Home.route)
+                        popUpTo(MainRoutes.Home.route) { inclusive = true }
                     }
                 },
                 onBack = { navController.popBackStack() }
@@ -62,6 +70,11 @@ fun AppNavigation() {
             MainScreen(
                 onMascotaClick = { mascotaId ->
                     navController.navigate(MainRoutes.Detail.createRoute(mascotaId))
+                },
+                onLogout = {
+                    navController.navigate(MainRoutes.Home.route) {
+                        popUpTo(MainRoutes.Home.route) { inclusive = true }
+                    }
                 }
             )
         }

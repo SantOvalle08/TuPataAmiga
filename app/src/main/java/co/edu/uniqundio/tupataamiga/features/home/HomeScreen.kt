@@ -22,9 +22,9 @@ import co.edu.uniqundio.tupataamiga.R
 @Composable
 fun HomeScreen(
     onNavigateLogin: () -> Unit,
-    onNavigateRegister: () -> Unit
+    onNavigateRegister: () -> Unit,
+    onNavigateGuest: () -> Unit
 ) {
-    // Forest green matching the logo
     val brandGreen = Color(0xFF0F4C25)
 
     val pagerState = rememberPagerState(pageCount = { 3 })
@@ -76,7 +76,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Functional Carousel for project descriptions
+            // Carousel for project descriptions
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
@@ -119,7 +119,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Action Buttons
             Button(
@@ -138,7 +138,7 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             OutlinedButton(
                 onClick = onNavigateRegister,
@@ -154,6 +154,20 @@ fun HomeScreen(
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            TextButton(
+                onClick = onNavigateGuest,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Continuar sin iniciar sesión (Invitado)",
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
                 )
             }
         }

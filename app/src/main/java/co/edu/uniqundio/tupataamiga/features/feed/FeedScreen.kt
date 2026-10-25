@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Pets
@@ -33,7 +34,8 @@ import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 fun FeedScreen(
     viewModel: FeedViewModel,
     onMascotaClick: (String) -> Unit,
-    onCreateClick: () -> Unit
+    onCreateClick: () -> Unit,
+    onAlertsClick: () -> Unit = {}
 ) {
     val mascotas by viewModel.mascotas.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
@@ -66,7 +68,7 @@ fun FeedScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onAlertsClick) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "Notificaciones",
@@ -222,6 +224,9 @@ fun FeedScreen(
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(filteredMascotas, key = { it.id }) { mascota ->
+                        var isLiked by remember { mutableStateOf(false) }
+                        var likesCount by remember { mutableStateOf(24) }
+
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -339,23 +344,33 @@ fun FeedScreen(
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        modifier = Modifier.clickable {
+                                            if (isLiked) {
+                                                isLiked = false
+                                                likesCount--
+                                            } else {
+                                                isLiked = true
+                                                likesCount++
+                                            }
+                                        }
                                     ) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(
-                                                imageVector = Icons.Default.Favorite,
+                                                imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                                 contentDescription = "Me gusta",
-                                                tint = Color(0xFFE53935),
+                                                tint = if (isLiked) Color(0xFFE53935) else Color.Gray,
                                                 modifier = Modifier.size(16.dp)
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
-                                            Text(text = "24", fontSize = 12.sp, color = Color.DarkGray)
+                                            Text(text = "$likesCount", fontSize = 12.sp, color = Color.DarkGray)
                                         }
                                     }
 
                                     Surface(
                                         color = fieldBg,
-                                        shape = RoundedCornerShape(16.dp)
+                                        shape = RoundedCornerShape(16.dp),
+                                        modifier = Modifier.clickable { onMascotaClick(mascota.id) }
                                     ) {
                                         Text(
                                             text = "Adoptar",

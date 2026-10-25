@@ -16,7 +16,8 @@ import co.edu.uniqundio.tupataamiga.features.feed.FeedViewModel
 
 @Composable
 fun MainScreen(
-    onMascotaClick: (String) -> Unit
+    onMascotaClick: (String) -> Unit,
+    onLogout: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     var currentDestination by remember { mutableStateOf(DashboardDestination.INICIO) }
@@ -53,6 +54,8 @@ fun MainScreen(
             feedViewModel = feedViewModel,
             createViewModel = createViewModel,
             onMascotaClick = onMascotaClick,
+            onLogout = onLogout,
+            onDestinationChange = { destination -> currentDestination = destination },
             modifier = Modifier.padding(innerPadding)
         )
     }

@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +18,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import co.edu.uniqundio.tupataamiga.features.create.CreateScreen
 import co.edu.uniqundio.tupataamiga.features.create.CreateViewModel
+import co.edu.uniqundio.tupataamiga.features.dashboard.AlertsScreen
+import co.edu.uniqundio.tupataamiga.features.dashboard.ProfileScreen
 import co.edu.uniqundio.tupataamiga.features.feed.FeedScreen
 import co.edu.uniqundio.tupataamiga.features.feed.FeedViewModel
 
@@ -29,6 +29,8 @@ fun DashboardNavigation(
     feedViewModel: FeedViewModel,
     createViewModel: CreateViewModel,
     onMascotaClick: (String) -> Unit,
+    onLogout: () -> Unit = {},
+    onDestinationChange: (DashboardDestination) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val brandGreen = Color(0xFF0F4C25)
@@ -42,7 +44,13 @@ fun DashboardNavigation(
             FeedScreen(
                 viewModel = feedViewModel,
                 onMascotaClick = onMascotaClick,
-                onCreateClick = { navController.navigate(DashboardRoutes.Create.route) }
+                onCreateClick = { navController.navigate(DashboardRoutes.Create.route) },
+                onAlertsClick = {
+                    onDestinationChange(DashboardDestination.ALERTAS)
+                    navController.navigate(DashboardRoutes.Alerts.route) {
+                        popUpTo(DashboardRoutes.Feed.route)
+                    }
+                }
             )
         }
         composable(DashboardRoutes.Create.route) {
@@ -61,10 +69,12 @@ fun DashboardNavigation(
             )
         }
         composable(DashboardRoutes.Alerts.route) {
-            co.edu.uniqundio.tupataamiga.features.dashboard.AlertsScreen()
+            AlertsScreen()
         }
         composable(DashboardRoutes.Profile.route) {
-            co.edu.uniqundio.tupataamiga.features.dashboard.ProfileScreen()
+            ProfileScreen(
+                onLogoutClick = onLogout
+            )
         }
     }
 }
