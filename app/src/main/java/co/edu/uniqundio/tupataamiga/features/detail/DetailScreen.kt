@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CheckCircle
@@ -24,17 +25,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
     viewModel: DetailViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    var isBookmarked by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(value = false) }
+    var isBookmarked by remember { mutableStateOf(value = false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -46,14 +48,14 @@ fun DetailScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color(0xFFF6FBF7)
+        containerColor = Color(0xFFF6FBF7),
     ) { padding ->
         if (mascota == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator(color = brandGreen)
             }
@@ -63,22 +65,22 @@ fun DetailScreen(
                     .fillMaxSize()
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
+                    .padding(16.dp),
             ) {
                 // Top Media Banner Container with Overlaid Action Icons
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(220.dp)
+                        .height(200.dp)
                         .clip(RoundedCornerShape(24.dp))
                         .background(fieldBg),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Pets,
                         contentDescription = null,
                         tint = brandGreen,
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier.size(80.dp),
                     )
 
                     // Top Action Overlay Buttons
@@ -87,18 +89,18 @@ fun DetailScreen(
                             .fillMaxWidth()
                             .padding(12.dp)
                             .align(Alignment.TopStart),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         IconButton(
                             onClick = onBack,
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.9f))
+                                .background(Color.White.copy(alpha = 0.9f)),
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
-                                tint = Color.Black
+                                tint = Color.Black,
                             )
                         }
 
@@ -111,12 +113,12 @@ fun DetailScreen(
                                 },
                                 modifier = Modifier
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.9f))
+                                    .background(Color.White.copy(alpha = 0.9f)),
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Share,
                                     contentDescription = "Compartir",
-                                    tint = Color.Black
+                                    tint = Color.Black,
                                 )
                             }
                             IconButton(
@@ -124,30 +126,30 @@ fun DetailScreen(
                                     isBookmarked = !isBookmarked
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
-                                            if (isBookmarked) "Guardado en tus favoritos" else "Removido de tus favoritos"
+                                            if (isBookmarked) "Guardado en tus favoritos" else "Removido de tus favoritos",
                                         )
                                     }
                                 },
                                 modifier = Modifier
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.9f))
+                                    .background(Color.White.copy(alpha = 0.9f)),
                             ) {
                                 Icon(
                                     imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                                     contentDescription = "Guardar",
-                                    tint = if (isBookmarked) brandGreen else Color.Black
+                                    tint = if (isBookmarked) brandGreen else Color.Black,
                                 )
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // Badges Line: Estado & Verificado
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     val (badgeBg, badgeFg) = when (mascota.estado) {
                         EstadoPublicacion.PERDIDO -> Color(0xFFFFEBEE) to Color(0xFFC62828)
@@ -157,14 +159,14 @@ fun DetailScreen(
 
                     Surface(
                         color = badgeBg,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(
                             text = mascota.estado.name.lowercase().replaceFirstChar { it.uppercase() },
                             color = badgeFg,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
                         )
                     }
 
@@ -173,19 +175,19 @@ fun DetailScreen(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = "Verificado",
                             tint = Color(0xFF1E88E5),
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "Verificado",
                             color = Color(0xFF1E88E5),
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Title
                 Text(
@@ -193,54 +195,54 @@ fun DetailScreen(
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
-                        fontSize = 22.sp
-                    )
+                        fontSize = 20.sp,
+                    ),
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Author Header Line
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(38.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
                             .background(brandGreen),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = "CH", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(text = "CH", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
                             text = "Carlos Herrera",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
+                            fontSize = 13.sp,
                         )
                         Text(
                             text = "hace 2 horas",
                             color = Color.Gray,
-                            fontSize = 12.sp
+                            fontSize = 11.sp,
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Metadata Grid Box (2x2)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = fieldBg)
+                    colors = CardDefaults.cardColors(containerColor = fieldBg),
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(text = "Tipo", fontSize = 11.sp, color = Color.Gray)
                                 Text(
                                     text = "🐕 ${mascota.categoria.name.lowercase().replaceFirstChar { it.uppercase() }}",
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    fontSize = 13.sp,
                                 )
                             }
                             Column(modifier = Modifier.weight(1f)) {
@@ -248,12 +250,12 @@ fun DetailScreen(
                                 Text(
                                     text = "Labrador",
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    fontSize = 13.sp,
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
@@ -261,7 +263,7 @@ fun DetailScreen(
                                 Text(
                                     text = "Grande",
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    fontSize = 13.sp,
                                 )
                             }
                             Column(modifier = Modifier.weight(1f)) {
@@ -269,14 +271,14 @@ fun DetailScreen(
                                 Text(
                                     text = "✅ Al día",
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    fontSize = 13.sp,
                                 )
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Description Text
                 Text(
@@ -284,42 +286,142 @@ fun DetailScreen(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = 14.sp,
                         color = Color.DarkGray,
-                        lineHeight = 22.sp
-                    )
+                        lineHeight = 20.sp,
+                    ),
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.4f))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // COMENTARIOS SECTION
+                Text(
+                    text = "Comentarios (${uiState.comentarios.size})",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                    ),
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Add Comment TextField & Button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    TextField(
+                        value = uiState.nuevoComentarioTexto,
+                        onValueChange = viewModel::onComentarioTextChanged,
+                        placeholder = { Text("Escribe un comentario...") },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = fieldBg,
+                            unfocusedContainerColor = fieldBg,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                        singleLine = true,
+                    )
+                    IconButton(
+                        onClick = {
+                            viewModel.agregarComentario {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Comentario publicado")
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(brandGreen),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Enviar",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Comments List
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    uiState.comentarios.forEach { comentario ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = comentario.autor,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = brandGreen,
+                                    )
+                                    Text(
+                                        text = comentario.tiempo,
+                                        fontSize = 11.sp,
+                                        color = Color.Gray,
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = comentario.texto,
+                                    fontSize = 13.sp,
+                                    color = Color.DarkGray,
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Action Buttons
                 Button(
                     onClick = { showDeleteDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(48.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                    shape = RoundedCornerShape(25.dp)
+                    shape = RoundedCornerShape(24.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Eliminar",
-                        tint = Color.White
+                        tint = Color.White,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Eliminar Publicación",
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.White,
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedButton(
                     onClick = onBack,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(25.dp)
+                        .height(48.dp),
+                    shape = RoundedCornerShape(24.dp),
                 ) {
                     Text("Volver al Feed", color = brandGreen, fontWeight = FontWeight.Bold)
                 }
@@ -337,8 +439,14 @@ fun DetailScreen(
                 TextButton(
                     onClick = {
                         showDeleteDialog = false
-                        viewModel.deleteMascota(onBack)
-                    }
+                        viewModel.deleteMascota {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Publicación eliminada correctamente")
+                                delay(800.milliseconds)
+                                onBack()
+                            }
+                        }
+                    },
                 ) {
                     Text("Eliminar", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                 }
@@ -347,7 +455,7 @@ fun DetailScreen(
                 TextButton(onClick = { showDeleteDialog = false }) {
                     Text("Cancelar")
                 }
-            }
+            },
         )
     }
 }

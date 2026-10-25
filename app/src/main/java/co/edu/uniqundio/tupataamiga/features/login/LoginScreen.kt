@@ -1,4 +1,5 @@
 package co.edu.uniqundio.tupataamiga.features.login
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,27 +17,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.R
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
     onLoginSuccess: () -> Unit,
     onNavigateRecovery: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(value = null) }
+    var passwordError by remember { mutableStateOf<String?>(value = null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val backgroundColor = Color(0xFFF6FBF7)
     val brandGreen = Color(0xFF0F4C25)
     val fieldBg = Color(0xFFE8F5E9)
+
     fun mostrarSnackbar(mensaje: String) {
         scope.launch {
-            snackbarHostState.showSnackbar(mensaje)
+            snackbarHostState.showSnackbar(message = mensaje)
         }
     }
+
     fun validarFormulario(): Boolean {
         var esValido = true
         if (!uiState.correo.contains("@")) {
@@ -56,64 +61,65 @@ fun LoginScreen(
         }
         return esValido
     }
+
     Scaffold(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
-        containerColor = backgroundColor
+        containerColor = backgroundColor,
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
                 .padding(paddingValues)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Box(
                 modifier = Modifier
-                    .size(88.dp)
-                    .clip(RoundedCornerShape(22.dp))
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(20.dp))
                     .background(brandGreen),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Image(
                     painter = painterResource(R.drawable.logo_pataamiga),
                     contentDescription = "Logo PataAmiga",
-                    modifier = Modifier.size(60.dp)
+                    modifier = Modifier.size(54.dp),
                 )
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Bienvenido de nuevo",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
-                    fontSize = 24.sp
+                    fontSize = 22.sp,
                 ),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Inicia sesión en PataAmiga",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Gray,
-                    fontSize = 14.sp
+                    fontSize = 13.sp,
                 ),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = "Correo electrónico",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray
+                        color = Color.DarkGray,
                     )
                     TextField(
                         value = uiState.correo,
@@ -132,24 +138,24 @@ fun LoginScreen(
                             errorContainerColor = fieldBg,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-                            errorIndicatorColor = MaterialTheme.colorScheme.error
+                            errorIndicatorColor = MaterialTheme.colorScheme.error,
                         ),
-                        singleLine = true
+                        singleLine = true,
                     )
                     emailError?.let {
                         Text(
                             text = it,
                             color = MaterialTheme.colorScheme.error,
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
                         )
                     }
                 }
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = "Contraseña",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray
+                        color = Color.DarkGray,
                     )
                     TextField(
                         value = uiState.clave,
@@ -169,15 +175,15 @@ fun LoginScreen(
                             errorContainerColor = fieldBg,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-                            errorIndicatorColor = MaterialTheme.colorScheme.error
+                            errorIndicatorColor = MaterialTheme.colorScheme.error,
                         ),
-                        singleLine = true
+                        singleLine = true,
                     )
                     passwordError?.let {
                         Text(
                             text = it,
                             color = MaterialTheme.colorScheme.error,
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
                         )
                     }
                 }
@@ -185,38 +191,41 @@ fun LoginScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
-                contentAlignment = Alignment.CenterEnd
+                    .padding(top = 4.dp),
+                contentAlignment = Alignment.CenterEnd,
             ) {
                 TextButton(
                     onClick = onNavigateRecovery,
-                    enabled = !uiState.isLoading
+                    enabled = !uiState.isLoading,
                 ) {
                     Text(
                         text = "¿Olvidaste tu contraseña?",
                         color = brandGreen,
                         fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
                     if (validarFormulario()) {
                         viewModel.login(
-                            onSuccess = onLoginSuccess,
+                            onSuccess = {
+                                mostrarSnackbar("¡Inicio de sesión exitoso!")
+                                scope.launch {
+                                    delay(600.milliseconds)
+                                    onLoginSuccess()
+                                }
+                            },
                             onError = { error ->
                                 val msg = error.lowercase()
                                 when {
                                     msg.contains("correo") ||
                                             msg.contains("user") ||
                                             msg.contains("usuario") -> {
-                                        emailError =
-                                            "El correo electrónico es incorrecto o no existe"
-                                        mostrarSnackbar(
-                                            "El correo electrónico es incorrecto o no existe"
-                                        )
+                                        emailError = "El correo electrónico es incorrecto o no existe"
+                                        mostrarSnackbar("El correo electrónico es incorrecto o no existe")
                                     }
                                     msg.contains("clave") ||
                                             msg.contains("contraseña") ||
@@ -230,7 +239,7 @@ fun LoginScreen(
                                         mostrarSnackbar("Correo o contraseña incorrectos")
                                     }
                                 }
-                            }
+                            },
                         )
                     }
                 },
@@ -239,45 +248,45 @@ fun LoginScreen(
                     .height(50.dp),
                 enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = brandGreen
+                    containerColor = brandGreen,
                 ),
-                shape = RoundedCornerShape(25.dp)
+                shape = RoundedCornerShape(25.dp),
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = Color.White
+                        color = Color.White,
                     )
                 } else {
                     Text(
                         text = "INICIAR SESIÓN",
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
-                        color = Color.White
+                        color = Color.White,
                     )
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
             Row(
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 12.dp),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = "¿No tienes cuenta? ",
                     color = Color.Gray,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
                 )
                 TextButton(
                     onClick = onBack,
                     enabled = !uiState.isLoading,
-                    contentPadding = PaddingValues(0.dp)
+                    contentPadding = PaddingValues(0.dp),
                 ) {
                     Text(
                         text = "Regístrate",
                         color = brandGreen,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
                     )
                 }
             }
