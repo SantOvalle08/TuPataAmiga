@@ -22,12 +22,12 @@ data class ProfileUiState(
     val rangoMostrar: String = "🐾 Invitado",
     val publicacionesContador: Int = 0,
     val comentariosContador: Int = 0,
-    val puntosContador: Int = 0
+    val puntosContador: Int = 0,
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     val uiState: StateFlow<ProfileUiState> = userRepository.currentUser
@@ -42,7 +42,7 @@ class ProfileViewModel @Inject constructor(
                     rangoMostrar = "🐾 Invitado",
                     publicacionesContador = 0,
                     comentariosContador = 0,
-                    puntosContador = 0
+                    puntosContador = 0,
                 )
             } else {
                 val esMod = user.rol == Rol.MODERADOR
@@ -55,14 +55,14 @@ class ProfileViewModel @Inject constructor(
                     rangoMostrar = if (esMod) "🛡️ Moderador" else "🐾 Amigo Animal",
                     publicacionesContador = if (esMod) 12 else 5,
                     comentariosContador = if (esMod) 48 else 18,
-                    puntosContador = if (esMod) 350 else 120
+                    puntosContador = if (esMod) 350 else 120,
                 )
             }
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = ProfileUiState()
+            initialValue = ProfileUiState(),
         )
 
     fun updateUserProfile(nombre: String, correo: String, onResult: (Boolean, String) -> Unit) {

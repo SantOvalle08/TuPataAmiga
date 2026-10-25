@@ -44,7 +44,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    onLogoutClick: () -> Unit = {}
+    onLogoutClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -52,23 +52,23 @@ fun ProfileScreen(
     val brandGreen = Color(0xFF0F4C25)
     val fieldBg = Color(0xFFE8F5E9)
 
-    var showStatsScreen by remember { mutableStateOf(false) }
-    var showModerationPanel by remember { mutableStateOf(false) }
+    var showStatsScreen by remember { mutableStateOf(value = false) }
+    var showModerationPanel by remember { mutableStateOf(value = false) }
 
     // Dialog states for interactive profile buttons
-    var showEditProfileDialog by remember { mutableStateOf(false) }
-    var showNotificationsDialog by remember { mutableStateOf(false) }
-    var showMyPublicationsDialog by remember { mutableStateOf(false) }
-    var showMyInterestsDialog by remember { mutableStateOf(false) }
-    var showLogoutDialog by remember { mutableStateOf(false) }
-    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+    var showEditProfileDialog by remember { mutableStateOf(value = false) }
+    var showNotificationsDialog by remember { mutableStateOf(value = false) }
+    var showMyPublicationsDialog by remember { mutableStateOf(value = false) }
+    var showMyInterestsDialog by remember { mutableStateOf(value = false) }
+    var showLogoutDialog by remember { mutableStateOf(value = false) }
+    var showDeleteAccountDialog by remember { mutableStateOf(value = false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     // Notification Permission Launcher for Android 13+
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
+        contract = ActivityResultContracts.RequestPermission(),
     ) { isGranted: Boolean ->
         if (isGranted) {
             scope.launch {
@@ -83,11 +83,11 @@ fun ProfileScreen(
 
     if (showModerationPanel) {
         ModerationPanelScreen(
-            onBack = { showModerationPanel = false }
+            onBack = { showModerationPanel = false },
         )
     } else if (showStatsScreen) {
         StatsAndAchievementsScreen(
-            onBack = { showStatsScreen = false }
+            onBack = { showStatsScreen = false },
         )
     } else {
         Scaffold(
@@ -99,7 +99,7 @@ fun ProfileScreen(
                             text = "Mi Perfil",
                             fontWeight = FontWeight.Bold,
                             color = Color.Black,
-                            fontSize = 22.sp
+                            fontSize = 22.sp,
                         )
                     },
                     actions = {
@@ -112,21 +112,21 @@ fun ProfileScreen(
                                 } else {
                                     showEditProfileDialog = true
                                 }
-                            }
+                            },
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Editar",
-                                tint = brandGreen
+                                tint = brandGreen,
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFFF6FBF7)
-                    )
+                        containerColor = Color(0xFFF6FBF7),
+                    ),
                 )
             },
-            containerColor = Color(0xFFF6FBF7)
+            containerColor = Color(0xFFF6FBF7),
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -135,17 +135,17 @@ fun ProfileScreen(
                     .background(Color(0xFFF6FBF7))
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 // User Header Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = fieldBg)
+                    colors = CardDefaults.cardColors(containerColor = fieldBg),
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             // Avatar Circle
                             Box(
@@ -153,13 +153,13 @@ fun ProfileScreen(
                                     .size(64.dp)
                                     .clip(CircleShape)
                                     .background(brandGreen),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Person,
                                     contentDescription = null,
                                     tint = Color.White,
-                                    modifier = Modifier.size(36.dp)
+                                    modifier = Modifier.size(36.dp),
                                 )
                             }
 
@@ -170,12 +170,12 @@ fun ProfileScreen(
                                     text = uiState.nombreMostrar,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
-                                    color = Color.Black
+                                    color = Color.Black,
                                 )
                                 Text(
                                     text = uiState.correoMostrar,
                                     fontSize = 13.sp,
-                                    color = Color.Gray
+                                    color = Color.Gray,
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -191,14 +191,14 @@ fun ProfileScreen(
                                         } else {
                                             showStatsScreen = true
                                         }
-                                    }
+                                    },
                                 ) {
                                     Text(
                                         text = uiState.rangoMostrar,
                                         color = Color.White,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                                     )
                                 }
                             }
@@ -221,11 +221,11 @@ fun ProfileScreen(
                                         showStatsScreen = true
                                     }
                                 },
-                            horizontalArrangement = Arrangement.SpaceEvenly
+                            horizontalArrangement = Arrangement.SpaceEvenly,
                         ) {
-                            ProfileStatItem(number = "${uiState.publicacionesContador}", label = "Publicaciones")
-                            ProfileStatItem(number = "${uiState.comentariosContador}", label = "Comentarios")
-                            ProfileStatItem(number = "${uiState.puntosContador}", label = "Puntos")
+                            ProfileStatItem(number = uiState.publicacionesContador.toString(), label = "Publicaciones")
+                            ProfileStatItem(number = uiState.comentariosContador.toString(), label = "Comentarios")
+                            ProfileStatItem(number = uiState.puntosContador.toString(), label = "Puntos")
                         }
                     }
                 }
@@ -235,7 +235,7 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 ) {
                     Column {
                         ProfileMenuItem(
@@ -251,21 +251,21 @@ fun ProfileScreen(
                                         snackbarHostState.showSnackbar("El panel de moderación solo está disponible para moderadores de TuPataAmiga")
                                     }
                                 }
-                            }
+                            },
                         )
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
 
                         ProfileMenuItem(
                             icon = Icons.AutoMirrored.Filled.Assignment,
                             title = "Mis publicaciones",
-                            countBadge = if (!uiState.esInvitado) "${uiState.publicacionesContador}" else null,
+                            countBadge = if (!uiState.esInvitado) uiState.publicacionesContador.toString() else null,
                             onClick = {
                                 if (uiState.esInvitado) {
                                     scope.launch { snackbarHostState.showSnackbar("Inicia sesión para gestionar tus publicaciones") }
                                 } else {
                                     showMyPublicationsDialog = true
                                 }
-                            }
+                            },
                         )
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
 
@@ -280,7 +280,7 @@ fun ProfileScreen(
                                 } else {
                                     showMyInterestsDialog = true
                                 }
-                            }
+                            },
                         )
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
 
@@ -295,7 +295,7 @@ fun ProfileScreen(
                                 } else {
                                     showStatsScreen = true
                                 }
-                            }
+                            },
                         )
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
 
@@ -308,7 +308,7 @@ fun ProfileScreen(
                                 } else {
                                     showStatsScreen = true
                                 }
-                            }
+                            },
                         )
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
 
@@ -319,7 +319,7 @@ fun ProfileScreen(
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     val hasNotifPerm = ContextCompat.checkSelfPermission(
                                         context,
-                                        Manifest.permission.POST_NOTIFICATIONS
+                                        Manifest.permission.POST_NOTIFICATIONS,
                                     ) == PackageManager.PERMISSION_GRANTED
 
                                     if (!hasNotifPerm) {
@@ -327,7 +327,7 @@ fun ProfileScreen(
                                     }
                                 }
                                 showNotificationsDialog = true
-                            }
+                            },
                         )
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
 
@@ -340,7 +340,7 @@ fun ProfileScreen(
                                 } else {
                                     showEditProfileDialog = true
                                 }
-                            }
+                            },
                         )
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
 
@@ -357,7 +357,7 @@ fun ProfileScreen(
                                 } else {
                                     showLogoutDialog = true
                                 }
-                            }
+                            },
                         )
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
 
@@ -372,7 +372,7 @@ fun ProfileScreen(
                                 } else {
                                     showDeleteAccountDialog = true
                                 }
-                            }
+                            },
                         )
                     }
                 }
@@ -397,14 +397,14 @@ fun ProfileScreen(
                         onValueChange = { editNombre = it },
                         label = { Text("Nombre") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                     OutlinedTextField(
                         value = editCorreo,
                         onValueChange = { editCorreo = it },
                         label = { Text("Correo electrónico") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             },
@@ -416,7 +416,7 @@ fun ProfileScreen(
                             scope.launch { snackbarHostState.showSnackbar(message) }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = brandGreen)
+                    colors = ButtonDefaults.buttonColors(containerColor = brandGreen),
                 ) {
                     Text("Guardar", color = Color.White)
                 }
@@ -425,15 +425,15 @@ fun ProfileScreen(
                 TextButton(onClick = { showEditProfileDialog = false }) {
                     Text("Cancelar")
                 }
-            }
+            },
         )
     }
 
     // 2. CONFIGURAR NOTIFICACIONES DIALOG
     if (showNotificationsDialog) {
-        var pushEnabled by remember { mutableStateOf(true) }
-        var alertMascotasEnabled by remember { mutableStateOf(true) }
-        var comentariosEnabled by remember { mutableStateOf(false) }
+        var pushEnabled by remember { mutableStateOf(value = true) }
+        var alertMascotasEnabled by remember { mutableStateOf(value = true) }
+        var comentariosEnabled by remember { mutableStateOf(value = false) }
 
         AlertDialog(
             onDismissRequest = { showNotificationsDialog = false },
@@ -443,17 +443,17 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text("Notificaciones Push", fontSize = 14.sp)
                         Switch(
                             checked = pushEnabled,
-                            onCheckedChange = {
-                                pushEnabled = it
-                                if (it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            onCheckedChange = { isChecked ->
+                                pushEnabled = isChecked
+                                if (isChecked && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)) {
                                     val hasNotifPerm = ContextCompat.checkSelfPermission(
                                         context,
-                                        Manifest.permission.POST_NOTIFICATIONS
+                                        Manifest.permission.POST_NOTIFICATIONS,
                                     ) == PackageManager.PERMISSION_GRANTED
 
                                     if (!hasNotifPerm) {
@@ -461,31 +461,31 @@ fun ProfileScreen(
                                     }
                                 }
                             },
-                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen)
+                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen),
                         )
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text("Alertas de mascotas perdidas", fontSize = 14.sp)
                         Switch(
                             checked = alertMascotasEnabled,
                             onCheckedChange = { alertMascotasEnabled = it },
-                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen)
+                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen),
                         )
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text("Nuevos comentarios e intereses", fontSize = 14.sp)
                         Switch(
                             checked = comentariosEnabled,
                             onCheckedChange = { comentariosEnabled = it },
-                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen)
+                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen),
                         )
                     }
                 }
@@ -498,7 +498,7 @@ fun ProfileScreen(
                             snackbarHostState.showSnackbar("Preferencias de notificación guardadas")
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = brandGreen)
+                    colors = ButtonDefaults.buttonColors(containerColor = brandGreen),
                 ) {
                     Text("Guardar", color = Color.White)
                 }
@@ -507,7 +507,7 @@ fun ProfileScreen(
                 TextButton(onClick = { showNotificationsDialog = false }) {
                     Text("Cancelar")
                 }
-            }
+            },
         )
     }
 
@@ -528,7 +528,7 @@ fun ProfileScreen(
                 TextButton(onClick = { showMyPublicationsDialog = false }) {
                     Text("Entendido", color = brandGreen)
                 }
-            }
+            },
         )
     }
 
@@ -550,7 +550,7 @@ fun ProfileScreen(
                 TextButton(onClick = { showMyInterestsDialog = false }) {
                     Text("Entendido", color = brandGreen)
                 }
-            }
+            },
         )
     }
 
@@ -567,7 +567,7 @@ fun ProfileScreen(
                         viewModel.logout()
                         onLogoutClick()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 ) {
                     Text("Cerrar sesión", color = Color.White)
                 }
@@ -576,7 +576,7 @@ fun ProfileScreen(
                 TextButton(onClick = { showLogoutDialog = false }) {
                     Text("Cancelar")
                 }
-            }
+            },
         )
     }
 
@@ -594,7 +594,7 @@ fun ProfileScreen(
                             onLogoutClick()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 ) {
                     Text("Eliminar", color = Color.White)
                 }
@@ -603,7 +603,7 @@ fun ProfileScreen(
                 TextButton(onClick = { showDeleteAccountDialog = false }) {
                     Text("Cancelar")
                 }
-            }
+            },
         )
     }
 }
@@ -615,13 +615,13 @@ private fun ProfileStatItem(number: String, label: String) {
             text = number,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = Color.Black,
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color.Gray
+            color = Color.Gray,
         )
     }
 }
@@ -633,7 +633,7 @@ private fun ProfileMenuItem(
     title: String,
     countBadge: String? = null,
     isDestructive: Boolean = false,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -641,21 +641,21 @@ private fun ProfileMenuItem(
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(22.dp),
             )
             Spacer(modifier = Modifier.width(14.dp))
             Text(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = if (isDestructive) MaterialTheme.colorScheme.error else Color.Black
+                color = if (isDestructive) MaterialTheme.colorScheme.error else Color.Black,
             )
         }
 
@@ -663,14 +663,14 @@ private fun ProfileMenuItem(
             if (countBadge != null) {
                 Surface(
                     color = Color(0xFFFFEBEE),
-                    shape = CircleShape
+                    shape = CircleShape,
                 ) {
                     Text(
                         text = countBadge,
                         color = Color(0xFFC62828),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -680,7 +680,7 @@ private fun ProfileMenuItem(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                 contentDescription = null,
                 tint = Color.LightGray,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(14.dp),
             )
         }
     }
