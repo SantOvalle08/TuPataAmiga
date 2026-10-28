@@ -97,16 +97,7 @@ fun ProfileScreen(
         AppSettingsFullScreen(
             onBack = { showSettingsScreen = false },
             brandGreen = brandGreen,
-            fieldBg = fieldBg,
-            onLogoutClick = {
-                viewModel.logout()
-                onLogoutClick()
-            },
-            onDeleteAccountClick = {
-                viewModel.deleteAccount {
-                    onLogoutClick()
-                }
-            }
+            fieldBg = fieldBg
         )
     } else if (showMyPublicationsScreen) {
         MyPublicationsFullScreen(
@@ -1118,9 +1109,7 @@ private data class MyInterestUiModel(
 private fun AppSettingsFullScreen(
     onBack: () -> Unit,
     brandGreen: Color,
-    fieldBg: Color,
-    onLogoutClick: () -> Unit = {},
-    onDeleteAccountClick: () -> Unit = {}
+    fieldBg: Color
 ) {
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
@@ -1136,8 +1125,6 @@ private fun AppSettingsFullScreen(
     var showTermsDialog by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
-    var showSettingsLogoutDialog by remember { mutableStateOf(false) }
-    var showSettingsDeleteDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -1304,58 +1291,7 @@ private fun AppSettingsFullScreen(
                 }
             }
 
-            // Section 3: Cuenta y Sesión
-            Text(text = "CUENTA Y SESIÓN", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = cardBg),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showSettingsLogoutDialog = true },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text("Cerrar sesión", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                        }
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
-                    }
-                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showSettingsDeleteDialog = true },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text("Eliminar cuenta", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                        }
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
-                    }
-                }
-            }
-
-            // Section 4: Información y Legal
+            // Section 3: Información y Legal
             Text(text = "ACERCA DE Y LEGAL", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -1404,56 +1340,6 @@ private fun AppSettingsFullScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
-    }
-
-    // Logout Confirmation Dialog
-    if (showSettingsLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showSettingsLogoutDialog = false },
-            title = { Text("¿Cerrar sesión?", fontWeight = FontWeight.Bold) },
-            text = { Text("Regresarás a la pantalla principal de bienvenida.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showSettingsLogoutDialog = false
-                        onLogoutClick()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Cerrar Sesión", color = Color.White)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showSettingsLogoutDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
-
-    // Delete Account Confirmation Dialog
-    if (showSettingsDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showSettingsDeleteDialog = false },
-            title = { Text("¿Eliminar cuenta permanentemente?", fontWeight = FontWeight.Bold) },
-            text = { Text("Esta acción removerá tu cuenta y tus publicaciones de la plataforma.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showSettingsDeleteDialog = false
-                        onDeleteAccountClick()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Eliminar Cuenta", color = Color.White)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showSettingsDeleteDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
     }
 
     // Terms Dialog
