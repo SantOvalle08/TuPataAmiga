@@ -57,13 +57,18 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    val brandGreen = Color(0xFF0F4C25)
-    val fieldBg = Color(0xFFE8F5E9)
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+    val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
+    val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
 
     var showStatsScreen by remember { mutableStateOf(value = false) }
     var showModerationPanel by remember { mutableStateOf(value = false) }
     var showMyPublicationsScreen by remember { mutableStateOf(value = false) }
     var showMyInterestsScreen by remember { mutableStateOf(value = false) }
+    var showSettingsScreen by remember { mutableStateOf(value = false) }
 
     // Dialog states for interactive profile buttons
     var showEditProfileDialog by remember { mutableStateOf(value = false) }
@@ -88,7 +93,22 @@ fun ProfileScreen(
         }
     }
 
-    if (showMyPublicationsScreen) {
+    if (showSettingsScreen) {
+        AppSettingsFullScreen(
+            onBack = { showSettingsScreen = false },
+            brandGreen = brandGreen,
+            fieldBg = fieldBg,
+            onLogoutClick = {
+                viewModel.logout()
+                onLogoutClick()
+            },
+            onDeleteAccountClick = {
+                viewModel.deleteAccount {
+                    onLogoutClick()
+                }
+            }
+        )
+    } else if (showMyPublicationsScreen) {
         MyPublicationsFullScreen(
             onBack = { showMyPublicationsScreen = false },
             brandGreen = brandGreen,
@@ -117,7 +137,7 @@ fun ProfileScreen(
                         Text(
                             text = "Mi Perfil",
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black,
+                            color = mainTextColor,
                             fontSize = 22.sp,
                         )
                     },
@@ -141,17 +161,17 @@ fun ProfileScreen(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFFF6FBF7),
+                        containerColor = backgroundColor,
                     ),
                 )
             },
-            containerColor = Color(0xFFF6FBF7),
+            containerColor = backgroundColor,
         ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .background(Color(0xFFF6FBF7))
+                    .background(backgroundColor)
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -189,12 +209,12 @@ fun ProfileScreen(
                                     text = uiState.nombreMostrar,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
-                                    color = Color.Black,
+                                    color = mainTextColor,
                                 )
                                 Text(
                                     text = uiState.correoMostrar,
                                     fontSize = 13.sp,
-                                    color = Color.Gray,
+                                    color = subTextColor,
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -253,7 +273,7 @@ fun ProfileScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = cardBg),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 ) {
                     Column {
@@ -352,6 +372,15 @@ fun ProfileScreen(
 
                         ProfileMenuItem(
                             icon = Icons.Default.Settings,
+                            title = "Ajustes de la aplicación",
+                            onClick = {
+                                showSettingsScreen = true
+                            },
+                        )
+                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+
+                        ProfileMenuItem(
+                            icon = Icons.Default.Person,
                             title = "Editar datos personales",
                             onClick = {
                                 if (uiState.esInvitado) {
@@ -985,18 +1014,21 @@ private fun MyAdoptionInterestsFullScreen(
 
 @Composable
 private fun ProfileStatItem(number: String, label: String) {
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = number,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = mainTextColor,
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color.Gray,
+            color = subTextColor,
         )
     }
 }
@@ -1004,12 +1036,14 @@ private fun ProfileStatItem(number: String, label: String) {
 @Composable
 private fun ProfileMenuItem(
     icon: ImageVector,
-    iconTint: Color = Color.DarkGray,
+    iconTint: Color = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor,
     title: String,
     countBadge: String? = null,
     isDestructive: Boolean = false,
     onClick: () -> Unit,
 ) {
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -1030,7 +1064,7 @@ private fun ProfileMenuItem(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = if (isDestructive) MaterialTheme.colorScheme.error else Color.Black,
+                color = if (isDestructive) MaterialTheme.colorScheme.error else mainTextColor,
             )
         }
 
@@ -1077,3 +1111,420 @@ private data class MyInterestUiModel(
     val dueno: String,
     val ubicacion: String
 )
+
+// Full Screen View: Ajustes de la Aplicación
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppSettingsFullScreen(
+    onBack: () -> Unit,
+    brandGreen: Color,
+    fieldBg: Color,
+    onLogoutClick: () -> Unit = {},
+    onDeleteAccountClick: () -> Unit = {}
+) {
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+
+    var isDarkMode by remember { mutableStateOf(co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.isDarkTheme.value) }
+    var soundEnabled by remember { mutableStateOf(true) }
+    var vibrationEnabled by remember { mutableStateOf(true) }
+
+    var showTermsDialog by remember { mutableStateOf(false) }
+    var showPrivacyDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
+    var showSettingsLogoutDialog by remember { mutableStateOf(false) }
+    var showSettingsDeleteDialog by remember { mutableStateOf(false) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            tint = brandGreen,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Ajustes de la Aplicación",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 19.sp,
+                            color = mainTextColor
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = mainTextColor
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = backgroundColor)
+            )
+        },
+        containerColor = backgroundColor
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(backgroundColor)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Section 1: Apariencia
+            Text(text = "APARIENCIA Y TEMA", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Modo Oscuro", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text(
+                                text = if (isDarkMode) "Activado (Fondo Oscuro · Texto Blanco)" else "Desactivado (Modo Claro)",
+                                fontSize = 12.sp,
+                                color = subTextColor
+                            )
+                        }
+                        Switch(
+                            checked = isDarkMode,
+                            onCheckedChange = { isChecked ->
+                                isDarkMode = isChecked
+                                co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.isDarkTheme.value = isChecked
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        if (isChecked) "Modo oscuro activado en toda la aplicación" else "Modo claro activado"
+                                    )
+                                }
+                            },
+                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen)
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray.copy(alpha = 0.2f))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Idioma de la Aplicación", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text("Español (Colombia)", fontSize = 12.sp, color = brandGreen, fontWeight = FontWeight.Medium)
+                        }
+                        Surface(
+                            color = Color(0xFFE8F5E9),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "Predeterminado",
+                                fontSize = 11.sp,
+                                color = brandGreen,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Section 2: Notificaciones y Sonidos
+            Text(text = "SONIDO Y VIBRACIÓN", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Efectos de sonido de alertas", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text(if (soundEnabled) "Sonidos activados" else "Sonidos silenciados", fontSize = 12.sp, color = subTextColor)
+                        }
+                        Switch(
+                            checked = soundEnabled,
+                            onCheckedChange = {
+                                soundEnabled = it
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(if (it) "Sonidos de alerta activados" else "Sonidos silenciados")
+                                }
+                            },
+                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen)
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray.copy(alpha = 0.2f))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Vibración de notificaciones", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text(if (vibrationEnabled) "Vibración activada" else "Vibración desactivada", fontSize = 12.sp, color = subTextColor)
+                        }
+                        Switch(
+                            checked = vibrationEnabled,
+                            onCheckedChange = {
+                                vibrationEnabled = it
+                                if (it) {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                }
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(if (it) "Vibración activada" else "Vibración desactivada")
+                                }
+                            },
+                            colors = SwitchDefaults.colors(checkedTrackColor = brandGreen)
+                        )
+                    }
+                }
+            }
+
+            // Section 3: Cuenta y Sesión
+            Text(text = "CUENTA Y SESIÓN", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showSettingsLogoutDialog = true },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Cerrar sesión", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                        }
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
+                    }
+                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showSettingsDeleteDialog = true },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Eliminar cuenta", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                        }
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
+                    }
+                }
+            }
+
+            // Section 4: Información y Legal
+            Text(text = "ACERCA DE Y LEGAL", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showTermsDialog = true },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Términos y condiciones de uso", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = mainTextColor)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
+                    }
+                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showPrivacyDialog = true },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Política de privacidad", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = mainTextColor)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
+                    }
+                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showAboutDialog = true },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("PataAmiga para Android", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text("Versión 1.0.0 · Universidad del Quindío 2026", fontSize = 12.sp, color = subTextColor)
+                        }
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+
+    // Logout Confirmation Dialog
+    if (showSettingsLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showSettingsLogoutDialog = false },
+            title = { Text("¿Cerrar sesión?", fontWeight = FontWeight.Bold) },
+            text = { Text("Regresarás a la pantalla principal de bienvenida.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSettingsLogoutDialog = false
+                        onLogoutClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Cerrar Sesión", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSettingsLogoutDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Delete Account Confirmation Dialog
+    if (showSettingsDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showSettingsDeleteDialog = false },
+            title = { Text("¿Eliminar cuenta permanentemente?", fontWeight = FontWeight.Bold) },
+            text = { Text("Esta acción removerá tu cuenta y tus publicaciones de la plataforma.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSettingsDeleteDialog = false
+                        onDeleteAccountClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Eliminar Cuenta", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSettingsDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Terms Dialog
+    if (showTermsDialog) {
+        AlertDialog(
+            onDismissRequest = { showTermsDialog = false },
+            title = { Text("Términos y Condiciones", fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    text = "Bienvenido a PataAmiga. Al hacer uso de esta aplicación aceptas promover la adopción responsable de mascotas, garantizar información verídica en las publicaciones y respetar las normas comunitarias establecidas por la Universidad del Quindío.",
+                    fontSize = 13.sp,
+                    color = Color.DarkGray,
+                    lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showTermsDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = brandGreen)
+                ) {
+                    Text("Aceptar", color = Color.White)
+                }
+            }
+        )
+    }
+
+    // Privacy Dialog
+    if (showPrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyDialog = false },
+            title = { Text("Política de Privacidad", fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    text = "Tus datos personales y de contacto en PataAmiga se gestionan de manera segura únicamente con el fin de facilitar la adopción, rescate y moderación de publicaciones de mascotas en Colombia.",
+                    fontSize = 13.sp,
+                    color = Color.DarkGray,
+                    lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showPrivacyDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = brandGreen)
+                ) {
+                    Text("Entendido", color = Color.White)
+                }
+            }
+        )
+    }
+
+    // About Dialog
+    if (showAboutDialog) {
+        AlertDialog(
+            onDismissRequest = { showAboutDialog = false },
+            title = { Text("Acerca de PataAmiga", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("🐾 PataAmiga v1.0.0", fontWeight = FontWeight.Bold, color = brandGreen)
+                    Text("Red de Adopción y Rescate de Mascotas en Colombia.", fontSize = 13.sp, color = Color.DarkGray)
+                    Text("Desarrollado para la asignatura de Desarrollo de Aplicaciones Móviles.", fontSize = 12.sp, color = Color.Gray)
+                    Text("Universidad del Quindío · 2026", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showAboutDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = brandGreen)
+                ) {
+                    Text("Cerrar", color = Color.White)
+                }
+            }
+        )
+    }
+}
