@@ -8,22 +8,30 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -54,19 +62,18 @@ fun ProfileScreen(
 
     var showStatsScreen by remember { mutableStateOf(value = false) }
     var showModerationPanel by remember { mutableStateOf(value = false) }
+    var showMyPublicationsScreen by remember { mutableStateOf(value = false) }
+    var showMyInterestsScreen by remember { mutableStateOf(value = false) }
 
     // Dialog states for interactive profile buttons
     var showEditProfileDialog by remember { mutableStateOf(value = false) }
     var showNotificationsDialog by remember { mutableStateOf(value = false) }
-    var showMyPublicationsDialog by remember { mutableStateOf(value = false) }
-    var showMyInterestsDialog by remember { mutableStateOf(value = false) }
     var showLogoutDialog by remember { mutableStateOf(value = false) }
     var showDeleteAccountDialog by remember { mutableStateOf(value = false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    // Notification Permission Launcher for Android 13+
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
     ) { isGranted: Boolean ->
@@ -81,7 +88,19 @@ fun ProfileScreen(
         }
     }
 
-    if (showModerationPanel) {
+    if (showMyPublicationsScreen) {
+        MyPublicationsFullScreen(
+            onBack = { showMyPublicationsScreen = false },
+            brandGreen = brandGreen,
+            fieldBg = fieldBg
+        )
+    } else if (showMyInterestsScreen) {
+        MyAdoptionInterestsFullScreen(
+            onBack = { showMyInterestsScreen = false },
+            brandGreen = brandGreen,
+            fieldBg = fieldBg
+        )
+    } else if (showModerationPanel) {
         ModerationPanelScreen(
             onBack = { showModerationPanel = false },
         )
@@ -263,7 +282,7 @@ fun ProfileScreen(
                                 if (uiState.esInvitado) {
                                     scope.launch { snackbarHostState.showSnackbar("Inicia sesión para gestionar tus publicaciones") }
                                 } else {
-                                    showMyPublicationsDialog = true
+                                    showMyPublicationsScreen = true
                                 }
                             },
                         )
@@ -278,7 +297,7 @@ fun ProfileScreen(
                                 if (uiState.esInvitado) {
                                     scope.launch { snackbarHostState.showSnackbar("Inicia sesión para ver tus mascotas guardadas") }
                                 } else {
-                                    showMyInterestsDialog = true
+                                    showMyInterestsScreen = true
                                 }
                             },
                         )
@@ -511,50 +530,7 @@ fun ProfileScreen(
         )
     }
 
-    // 3. MIS PUBLICACIONES DIALOG
-    if (showMyPublicationsDialog) {
-        AlertDialog(
-            onDismissRequest = { showMyPublicationsDialog = false },
-            title = { Text("Mis publicaciones", fontWeight = FontWeight.Bold) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Tienes ${uiState.publicacionesContador} publicaciones activas en la plataforma:", fontSize = 13.sp)
-                    HorizontalDivider()
-                    Text("• Rex busca hogar (Adopción)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("• Michi extraviado (Perdidos)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showMyPublicationsDialog = false }) {
-                    Text("Entendido", color = brandGreen)
-                }
-            },
-        )
-    }
-
-    // 4. MIS INTERESES DIALOG
-    if (showMyInterestsDialog) {
-        AlertDialog(
-            onDismissRequest = { showMyInterestsDialog = false },
-            title = { Text("Mis intereses en adopción", fontWeight = FontWeight.Bold) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Mascotas en las que has mostrado interés:", fontSize = 13.sp)
-                    HorizontalDivider()
-                    Text("• Firulais (Perro - Adopción)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("• Pelusa (Gato - Adopción)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("• Max (Perro - Encontrado)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showMyInterestsDialog = false }) {
-                    Text("Entendido", color = brandGreen)
-                }
-            },
-        )
-    }
-
-    // 5. CERRAR SESIÓN DIALOG
+    // 3. CERRAR SESIÓN DIALOG
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
@@ -580,7 +556,7 @@ fun ProfileScreen(
         )
     }
 
-    // 6. ELIMINAR CUENTA DIALOG
+    // 4. ELIMINAR CUENTA DIALOG
     if (showDeleteAccountDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteAccountDialog = false },
@@ -605,6 +581,405 @@ fun ProfileScreen(
                 }
             },
         )
+    }
+}
+
+// Full Screen View: Mis Publicaciones
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MyPublicationsFullScreen(
+    onBack: () -> Unit,
+    brandGreen: Color,
+    fieldBg: Color
+) {
+    var selectedFilter by remember { mutableStateOf("Todas") }
+
+    val myPostsList = remember {
+        listOf(
+            MyPostUiModel("1", "Rex busca un hogar amoroso", "Adopción", "Verificada", "El Bosque, Armenia", "24 me gusta · 8 comentarios"),
+            MyPostUiModel("2", "Michi extraviado en el parque", "Perdidos", "Verificada", "Centro, Armenia", "15 me gusta · 12 comentarios"),
+            MyPostUiModel("3", "Perrito en la plaza", "Encontrados", "Pendiente", "Plaza de Bolívar", "3 me gusta · 1 comentario"),
+            MyPostUiModel("4", "Gata de raza persa", "Adopción", "Verificada", "La Castellana", "19 me gusta · 5 comentarios"),
+            MyPostUiModel("5", "Toby busca familia", "Adopción", "Finalizada", "Granada, Armenia", "30 me gusta · 14 comentarios")
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Assignment,
+                            contentDescription = null,
+                            tint = brandGreen,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Mis Publicaciones",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 19.sp,
+                            color = Color.Black
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.Black
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF6FBF7))
+            )
+        },
+        containerColor = Color(0xFFF6FBF7)
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(Color(0xFFF6FBF7))
+                .padding(horizontal = 16.dp)
+        ) {
+            // Header Info Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = fieldBg)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Assignment,
+                        contentDescription = null,
+                        tint = brandGreen,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Gestión de tus 7 publicaciones",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = brandGreen
+                        )
+                        Text(
+                            text = "Aquí puedes revisar el estado de aprobación de tus mascotas, editarlas o cambiar su estado.",
+                            fontSize = 12.sp,
+                            color = Color.DarkGray,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Filter Chips Row
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(listOf("Todas", "Activas", "Verificadas", "Pendientes", "Finalizadas")) { filter ->
+                    FilterChip(
+                        selected = selectedFilter == filter,
+                        onClick = { selectedFilter = filter },
+                        label = { Text(filter) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = brandGreen,
+                            selectedLabelColor = Color.White
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Publications List
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                items(myPostsList, key = { it.id }) { post ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(fieldBg),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Pets,
+                                        contentDescription = null,
+                                        tint = brandGreen,
+                                        modifier = Modifier.size(30.dp)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            color = if (post.estadoModeracion == "Verificada") Color(0xFFE8F5E9) else Color(0xFFFFF8E1),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    imageVector = if (post.estadoModeracion == "Verificada") Icons.Default.CheckCircle else Icons.Default.HourglassEmpty,
+                                                    contentDescription = null,
+                                                    tint = if (post.estadoModeracion == "Verificada") Color(0xFF2E7D32) else Color(0xFFF57F17),
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = post.estadoModeracion,
+                                                    color = if (post.estadoModeracion == "Verificada") Color(0xFF2E7D32) else Color(0xFFF57F17),
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 10.sp
+                                                )
+                                            }
+                                        }
+
+                                        Text(text = post.tipo, fontSize = 11.sp, color = brandGreen, fontWeight = FontWeight.Bold)
+                                    }
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Text(
+                                        text = post.nombre,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        color = Color.Black
+                                    )
+
+                                    Spacer(modifier = Modifier.height(2.dp))
+
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(13.dp))
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Text(text = post.ubicacion, fontSize = 11.sp, color = Color.Gray)
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+                            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = post.interaccion, fontSize = 11.sp, color = Color.Gray)
+
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(
+                                        onClick = { },
+                                        shape = RoundedCornerShape(16.dp),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                                    ) {
+                                        Text("Editar", fontSize = 11.sp, color = brandGreen)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Full Screen View: Mis Intereses en Adopción
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MyAdoptionInterestsFullScreen(
+    onBack: () -> Unit,
+    brandGreen: Color,
+    fieldBg: Color
+) {
+    val interestsList = remember {
+        listOf(
+            MyInterestUiModel("1", "Rex busca un hogar amoroso", "Perro · Labrador", "Carlos Herrera", "El Bosque, Armenia"),
+            MyInterestUiModel("2", "Pelusa en adopción responsable", "Gato · Angora", "Ana López", "Centro, Armenia"),
+            MyInterestUiModel("3", "Max perrito rescatado", "Perro · Mestizo", "María Fernanda", "Granada, Armenia")
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = null,
+                            tint = Color(0xFFE53935),
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Mis Intereses en Adopción",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Color.Black
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.Black
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF6FBF7))
+            )
+        },
+        containerColor = Color(0xFFF6FBF7)
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(Color(0xFFF6FBF7))
+                .padding(horizontal = 16.dp)
+        ) {
+            // Header Info Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = null,
+                        tint = Color(0xFFE53935),
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "3 Mascotas Guardadas",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = Color(0xFFC62828)
+                        )
+                        Text(
+                            text = "Mascotas que has marcado con interés. Ponte en contacto con sus rescatistas para coordinar la adopción.",
+                            fontSize = 12.sp,
+                            color = Color.DarkGray,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Interests List
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                items(interestsList, key = { it.id }) { item ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(fieldBg),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Pets,
+                                        contentDescription = null,
+                                        tint = brandGreen,
+                                        modifier = Modifier.size(30.dp)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(14.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = item.nombre,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        color = Color.Black
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(text = item.raza, fontSize = 12.sp, color = Color.Gray)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(text = "Publicante: ${item.dueno}", fontSize = 11.sp, color = brandGreen, fontWeight = FontWeight.Medium)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+                            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(13.dp))
+                                    Spacer(modifier = Modifier.width(2.dp))
+                                    Text(text = item.ubicacion, fontSize = 11.sp, color = Color.Gray)
+                                }
+
+                                Button(
+                                    onClick = { },
+                                    colors = ButtonDefaults.buttonColors(containerColor = brandGreen),
+                                    shape = RoundedCornerShape(16.dp),
+                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                                ) {
+                                    Text("Contactar", fontSize = 12.sp, color = Color.White)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -685,3 +1060,20 @@ private fun ProfileMenuItem(
         }
     }
 }
+
+private data class MyPostUiModel(
+    val id: String,
+    val nombre: String,
+    val tipo: String,
+    val estadoModeracion: String,
+    val ubicacion: String,
+    val interaccion: String
+)
+
+private data class MyInterestUiModel(
+    val id: String,
+    val nombre: String,
+    val raza: String,
+    val dueno: String,
+    val ubicacion: String
+)

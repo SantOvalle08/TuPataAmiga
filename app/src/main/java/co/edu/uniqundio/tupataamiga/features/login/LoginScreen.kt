@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun LoginScreen(
