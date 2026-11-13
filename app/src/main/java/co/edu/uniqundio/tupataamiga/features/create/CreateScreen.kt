@@ -110,7 +110,7 @@ fun CreateScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // 1. CATEGORÍA (Pills)
+            // 1. CATEGORÍA (Pills: Adopción, Perdido, Encontrado, Hogar Temporal, Jornada Veterinaria)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "CATEGORÍA",
@@ -120,11 +120,11 @@ fun CreateScreen(
                     letterSpacing = 0.5.sp
                 )
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(EstadoPublicacion.entries) { estado ->
+                    items(co.edu.uniqundio.tupataamiga.domain.model.Categoria.entries) { cat ->
                         FilterChip(
-                            selected = uiState.estado == estado,
-                            onClick = { viewModel.onEstadoChanged(estado) },
-                            label = { Text(estado.name.lowercase().replaceFirstChar { it.uppercase() }) },
+                            selected = uiState.categoria == cat,
+                            onClick = { viewModel.onCategoriaChanged(cat) },
+                            label = { Text(cat.name.replace("_", " ")) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = brandGreen,
                                 selectedLabelColor = Color.White
@@ -169,11 +169,11 @@ fun CreateScreen(
                     letterSpacing = 0.5.sp
                 )
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(Categoria.entries) { cat ->
+                    items(co.edu.uniqundio.tupataamiga.domain.model.TipoAnimal.entries) { tipo ->
                         FilterChip(
-                            selected = uiState.categoria == cat,
-                            onClick = { viewModel.onCategoriaChanged(cat) },
-                            label = { Text(cat.name.lowercase().replaceFirstChar { it.uppercase() }) },
+                            selected = uiState.tipoAnimal == tipo,
+                            onClick = { viewModel.onTipoAnimalChanged(tipo) },
+                            label = { Text(tipo.name) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = brandGreen,
                                 selectedLabelColor = Color.White
@@ -218,11 +218,11 @@ fun CreateScreen(
                     letterSpacing = 0.5.sp
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Pequeño", "Mediano", "Grande").forEach { tam ->
+                    co.edu.uniqundio.tupataamiga.domain.model.TamanoMascota.entries.forEach { tam ->
                         FilterChip(
                             selected = uiState.tamano == tam,
                             onClick = { viewModel.onTamanoChanged(tam) },
-                            label = { Text(tam) },
+                            label = { Text(tam.name) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = brandGreen,
                                 selectedLabelColor = Color.White

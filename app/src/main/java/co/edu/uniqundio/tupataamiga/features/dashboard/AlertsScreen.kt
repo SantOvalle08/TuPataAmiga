@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 
 data class NotificacionUiModel(
     val id: String,
@@ -48,57 +49,37 @@ enum class TipoNotificacion {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlertsScreen() {
-    val brandGreen = Color(0xFF0F4C25)
-    val fieldBg = Color(0xFFE8F5E9)
+fun AlertsScreen(
+    viewModel: AlertsViewModel = hiltViewModel()
+) {
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+    val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
+    val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
 
     var activeFullScreenType by remember { mutableStateOf<TipoNotificacion?>(null) }
+    val notificacionesState by viewModel.notificaciones.collectAsState()
 
-    var notificaciones by remember {
-        mutableStateOf(
-            listOf(
-                NotificacionUiModel(
-                    id = "1",
-                    titulo = "Publicación verificada",
-                    cuerpo = "Tu publicación \"Rex busca hogar\" fue verificada por un moderador.",
-                    tiempo = "hace 30 min",
-                    tipo = TipoNotificacion.VERIFICADA,
-                    leido = false
-                ),
-                NotificacionUiModel(
-                    id = "2",
-                    titulo = "5 personas interesadas",
-                    cuerpo = "5 personas marcaron interés en adoptar a Rex.",
-                    tiempo = "hace 1 h",
-                    tipo = TipoNotificacion.INTERES,
-                    leido = false
-                ),
-                NotificacionUiModel(
-                    id = "3",
-                    titulo = "Nuevo comentario",
-                    cuerpo = "Ana López comentó en tu publicación \"Rex busca hogar\".",
-                    tiempo = "hace 2 h",
-                    tipo = TipoNotificacion.COMENTARIO,
-                    leido = false
-                ),
-                NotificacionUiModel(
-                    id = "4",
-                    titulo = "¡Nuevo logro!",
-                    cuerpo = "Obtuviste la insignia \"Primera Huella\" por tu primera publicación.",
-                    tiempo = "hace 1 día",
-                    tipo = TipoNotificacion.LOGRO,
-                    leido = true
-                ),
-                NotificacionUiModel(
-                    id = "5",
-                    titulo = "Publicación rechazada",
-                    cuerpo = "Motivo: las imágenes no corresponden a la descripción.",
-                    tiempo = "hace 2 días",
-                    tipo = TipoNotificacion.RECHAZADA,
-                    leido = true
-                )
+    val notificaciones = remember(notificacionesState) {
+        notificacionesState.map { domainNotif ->
+            val tipoEnum = when (domainNotif.tipo.uppercase()) {
+                "VERIFICADA" -> TipoNotificacion.VERIFICADA
+                "INTERES" -> TipoNotificacion.INTERES
+                "COMENTARIO" -> TipoNotificacion.COMENTARIO
+                "LOGRO" -> TipoNotificacion.LOGRO
+                else -> TipoNotificacion.RECHAZADA
+            }
+            NotificacionUiModel(
+                id = domainNotif.id,
+                titulo = domainNotif.titulo,
+                cuerpo = domainNotif.cuerpo,
+                tiempo = domainNotif.tiempo,
+                tipo = tipoEnum,
+                leido = domainNotif.leido
             )
-        )
+        }
     }
 
     when (activeFullScreenType) {
@@ -150,10 +131,10 @@ fun AlertsScreen() {
                         },
                         actions = {
                             TextButton(
-                                onClick = {
-                                    notificaciones = notificaciones.map { it.copy(leido = true) }
-                                }
-                            ) {
+                        onClick = {
+                            viewModel.marcarTodasLeidas()
+                        }
+                    ) {
                                 Text(
                                     text = "Marcar leídas",
                                     color = brandGreen,
@@ -208,9 +189,6 @@ fun AlertsScreen() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    notificaciones = notificaciones.map {
-                                        if (it.id == notif.id) it.copy(leido = true) else it
-                                    }
                                     activeFullScreenType = notif.tipo
                                 }
                         ) {

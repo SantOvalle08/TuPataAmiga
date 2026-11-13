@@ -1,11 +1,9 @@
 package co.edu.uniqundio.tupataamiga.features.create
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.edu.uniqundio.tupataamiga.domain.model.Categoria
-import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
-import co.edu.uniqundio.tupataamiga.domain.model.Mascota
-import co.edu.uniqundio.tupataamiga.domain.model.Nivel
+import co.edu.uniqundio.tupataamiga.domain.model.*
 import co.edu.uniqundio.tupataamiga.domain.usecase.mascota.CreateMascotaUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,11 +45,11 @@ class CreateViewModel @Inject constructor(
         _uiState.update { it.copy(categoria = categoria) }
     }
 
-    fun onEstadoChanged(estado: EstadoPublicacion) {
-        _uiState.update { it.copy(estado = estado) }
+    fun onTipoAnimalChanged(tipoAnimal: TipoAnimal) {
+        _uiState.update { it.copy(tipoAnimal = tipoAnimal) }
     }
 
-    fun onTamanoChanged(tamano: String) {
+    fun onTamanoChanged(tamano: TamanoMascota) {
         _uiState.update { it.copy(tamano = tamano) }
     }
 
@@ -61,6 +59,22 @@ class CreateViewModel @Inject constructor(
 
     fun onUbicacionChanged(ubicacion: String) {
         _uiState.update { it.copy(ubicacion = ubicacion) }
+    }
+
+    fun onNecesidadAdicionalChanged(necesidad: String) {
+        _uiState.update { it.copy(necesidadAdicional = necesidad) }
+    }
+
+    fun onFotosAgregadas(nuevasUris: List<Uri>) {
+        _uiState.update { state ->
+            state.copy(fotosSeleccionadas = (state.fotosSeleccionadas + nuevasUris).distinct())
+        }
+    }
+
+    fun onFotoEliminada(uri: Uri) {
+        _uiState.update { state ->
+            state.copy(fotosSeleccionadas = state.fotosSeleccionadas.filter { it != uri })
+        }
     }
 
     fun createMascota(
@@ -82,15 +96,26 @@ class CreateViewModel @Inject constructor(
             try {
                 _uiState.update { it.copy(isLoading = true) }
 
+                val imagenFinal = state.fotosSeleccionadas.firstOrNull()?.toString()
+                    ?: randomImages.random()
+
                 val mascota = Mascota(
                     id = UUID.randomUUID().toString(),
                     nombre = state.nombre,
                     categoria = state.categoria,
-                    nivel = Nivel.MEDIO,
-                    estado = state.estado,
+                    tipoAnimal = state.tipoAnimal,
+                    raza = state.raza.ifBlank { "Mestizo" },
+                    tamano = state.tamano,
+                    vacunasAlDia = state.tieneVacunas,
+                    vacunasDetalle = if (state.tieneVacunas) "Vacunas al día" else "Esquema en proceso",
+                    nivelUrgencia = NivelUrgencia.MEDIO,
+                    necesidadAdicional = state.necesidadAdicional,
+                    estado = EstadoPublicacion.PENDIENTE,
                     descripcion = state.descripcion,
-                    imagenUrl = randomImages.random(),
-                    usuarioId = "user1"
+                    imagenUrl = imagenFinal,
+                    ubicacion = state.ubicacion,
+                    usuarioId = "user1",
+                    fechaCreacion = "Hace un momento"
                 )
 
                 createMascotaUseCase(mascota)
@@ -109,10 +134,12 @@ data class CreateUiState(
     val nombre: String = "",
     val raza: String = "",
     val descripcion: String = "",
-    val tamano: String = "Mediano",
+    val tamano: TamanoMascota = TamanoMascota.MEDIANO,
     val tieneVacunas: Boolean = true,
     val ubicacion: String = "El Bosque, Armenia",
-    val categoria: Categoria = Categoria.PERRO,
-    val estado: EstadoPublicacion = EstadoPublicacion.ADOPCION,
+    val necesidadAdicional: String = "",
+    val categoria: Categoria = Categoria.ADOPCION,
+    val tipoAnimal: TipoAnimal = TipoAnimal.PERRO,
+    val fotosSeleccionadas: List<Uri> = emptyList(),
     val isLoading: Boolean = false
 )

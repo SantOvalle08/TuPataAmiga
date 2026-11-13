@@ -23,80 +23,42 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 import kotlinx.coroutines.launch
-
-data class PendingModerationModel(
-    val id: String,
-    val titulo: String,
-    val autor: String,
-    val tiempo: String,
-    val estado: String,
-    val resumenIa: String,
-    val badgeBg: Color,
-    val badgeFg: Color
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModerationPanelScreen(
+    viewModel: ModerationViewModel = hiltViewModel(),
     onBack: () -> Unit = {}
 ) {
-    val brandGreen = Color(0xFF0F4C25)
-    val fieldBg = Color(0xFFE8F5E9)
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+    val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
+    val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
+
+    val pendingPosts by viewModel.pendingPosts.collectAsState()
+    val approvedPosts by viewModel.approvedPosts.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    var pendingPosts by remember {
-        mutableStateOf(
-            listOf(
-                PendingModerationModel(
-                    id = "1",
-                    titulo = "Perrito mestizo para adopción",
-                    autor = "por Pedro M.",
-                    tiempo = "hace 20 min",
-                    estado = "Adopción",
-                    resumenIa = "Publicación legítima. Descripción coherente con las fotos. Acción recomendada: Verificar.",
-                    badgeBg = Color(0xFFE8F5E9),
-                    badgeFg = Color(0xFF2E7D32)
-                ),
-                PendingModerationModel(
-                    id = "2",
-                    titulo = "Gata encontrada en el parque",
-                    autor = "por Sofía R.",
-                    tiempo = "hace 45 min",
-                    estado = "Encontrados",
-                    resumenIa = "Foto clara de la mascota. Sin coincidencias de duplicidad previa en la zona. Recomendado: Verificar.",
-                    badgeBg = Color(0xFFE3F2FD),
-                    badgeFg = Color(0xFF1565C0)
-                ),
-                PendingModerationModel(
-                    id = "3",
-                    titulo = "Perro extraviado en el centro",
-                    autor = "por Carlos H.",
-                    tiempo = "hace 1 h",
-                    estado = "Perdidos",
-                    resumenIa = "Sugerencia de moderación: Comprobar teléfono de contacto antes de publicar.",
-                    badgeBg = Color(0xFFFFEBEE),
-                    badgeFg = Color(0xFFC62828)
-                )
-            )
-        )
-    }
-
-    var selectedRejectPost by remember { mutableStateOf<PendingModerationModel?>(null) }
+    var selectedRejectPost by remember { mutableStateOf<Mascota?>(null) }
     var rejectReason by remember { mutableStateOf("") }
     var rejectError by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = Color(0xFFF6FBF7)
+        containerColor = backgroundColor
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFFF6FBF7))
+                .background(backgroundColor)
         ) {
             // Header Banner Card
             Box(
@@ -156,7 +118,6 @@ fun ModerationPanelScreen(
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // 3 Metric Cards Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -169,14 +130,8 @@ fun ModerationPanelScreen(
                         )
                         ModerationMetricCard(
                             modifier = Modifier.weight(1f),
-                            count = "12",
-                            label = "Verificadas hoy",
-                            bgColor = Color.White.copy(alpha = 0.18f)
-                        )
-                        ModerationMetricCard(
-                            modifier = Modifier.weight(1f),
-                            count = "2",
-                            label = "Rechazadas hoy",
+                            count = "${approvedPosts.size}",
+                            label = "Aprobadas",
                             bgColor = Color.White.copy(alpha = 0.18f)
                         )
                     }
@@ -185,19 +140,17 @@ fun ModerationPanelScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Title "PUBLICACIONES PENDIENTES"
             Text(
-                text = "PUBLICACIONES PENDIENTES",
+                text = "PUBLICACIONES PENDIENTES DE REVISIÓN",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Gray,
+                color = subTextColor,
                 letterSpacing = 0.5.sp,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Pending Posts List
             if (pendingPosts.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -217,12 +170,12 @@ fun ModerationPanelScreen(
                             text = "¡Todo al día!",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = Color.Black
+                            color = mainTextColor
                         )
                         Text(
                             text = "No hay publicaciones pendientes de moderación.",
                             fontSize = 13.sp,
-                            color = Color.Gray
+                            color = subTextColor
                         )
                     }
                 }
@@ -238,7 +191,7 @@ fun ModerationPanelScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = cardBg),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
@@ -246,7 +199,6 @@ fun ModerationPanelScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.Top
                                 ) {
-                                    // Pet Image Thumbnail
                                     Box(
                                         modifier = Modifier
                                             .size(72.dp)
@@ -271,12 +223,12 @@ fun ModerationPanelScreen(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Surface(
-                                                color = item.badgeBg,
+                                                color = Color(0xFFFFF8E1),
                                                 shape = RoundedCornerShape(12.dp)
                                             ) {
                                                 Text(
-                                                    text = item.estado,
-                                                    color = item.badgeFg,
+                                                    text = item.categoria.name,
+                                                    color = Color(0xFFF57F17),
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 11.sp,
                                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
@@ -284,19 +236,19 @@ fun ModerationPanelScreen(
                                             }
 
                                             Text(
-                                                text = item.tiempo,
+                                                text = item.fechaCreacion,
                                                 fontSize = 11.sp,
-                                                color = Color.Gray
+                                                color = subTextColor
                                             )
                                         }
 
                                         Spacer(modifier = Modifier.height(4.dp))
 
                                         Text(
-                                            text = item.titulo,
+                                            text = item.nombre,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
-                                            color = Color.Black,
+                                            color = mainTextColor,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
@@ -304,16 +256,16 @@ fun ModerationPanelScreen(
                                         Spacer(modifier = Modifier.height(2.dp))
 
                                         Text(
-                                            text = item.autor,
+                                            text = "por ${item.nombrePublicante}",
                                             fontSize = 12.sp,
-                                            color = Color.Gray
+                                            color = subTextColor
                                         )
                                     }
                                 }
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                // AI Summary Card (Purple Card)
+                                // AI Analysis Card
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(14.dp),
@@ -329,7 +281,7 @@ fun ModerationPanelScreen(
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Text(
-                                                text = "Resumen IA",
+                                                text = "Resumen de Moderación IA",
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.sp,
                                                 color = Color(0xFF7B1FA2)
@@ -337,7 +289,7 @@ fun ModerationPanelScreen(
                                         }
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            text = item.resumenIa,
+                                            text = "Publicación en categoría ${item.categoria.name}. Descripción coherente. Raza: ${item.raza}. Vacunas: ${item.vacunasDetalle}.",
                                             fontSize = 12.sp,
                                             color = Color(0xFF4A148C),
                                             lineHeight = 16.sp
@@ -347,16 +299,15 @@ fun ModerationPanelScreen(
 
                                 Spacer(modifier = Modifier.height(14.dp))
 
-                                // Action Buttons Row: Verify & Reject
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     OutlinedButton(
                                         onClick = {
-                                            pendingPosts = pendingPosts.filter { it.id != item.id }
+                                            viewModel.aprobarPublicacion(item.id, item.nombre)
                                             scope.launch {
-                                                snackbarHostState.showSnackbar("Publicación verificada exitosamente")
+                                                snackbarHostState.showSnackbar("Publicación verificada. ¡Aparecerá inmediatamente en el Feed!")
                                             }
                                         },
                                         modifier = Modifier.weight(1f),
@@ -373,7 +324,7 @@ fun ModerationPanelScreen(
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Verificar", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                        Text("Aprobar", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     }
 
                                     OutlinedButton(
@@ -407,7 +358,6 @@ fun ModerationPanelScreen(
         }
     }
 
-    // Rejection Dialog with Mandatory Reason
     selectedRejectPost?.let { post ->
         AlertDialog(
             onDismissRequest = { selectedRejectPost = null },
@@ -415,7 +365,7 @@ fun ModerationPanelScreen(
             text = {
                 Column {
                     Text(
-                        text = "Escribe el motivo del rechazo para la publicación de \"${post.titulo}\":",
+                        text = "Escribe el motivo del rechazo para \"${post.nombre}\":",
                         fontSize = 13.sp,
                         color = Color.DarkGray
                     )
@@ -441,10 +391,10 @@ fun ModerationPanelScreen(
                         if (rejectReason.isBlank()) {
                             rejectError = "Escribir un motivo es obligatorio"
                         } else {
-                            pendingPosts = pendingPosts.filter { it.id != post.id }
+                            viewModel.rechazarPublicacion(post.id, post.nombre, rejectReason)
                             selectedRejectPost = null
                             scope.launch {
-                                snackbarHostState.showSnackbar("Publicación rechazada por: $rejectReason")
+                                snackbarHostState.showSnackbar("Publicación rechazada y notificada al usuario")
                             }
                         }
                     }

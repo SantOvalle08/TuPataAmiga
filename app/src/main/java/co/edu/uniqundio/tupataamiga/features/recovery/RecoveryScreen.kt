@@ -16,21 +16,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.R
+import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import kotlinx.coroutines.launch
 
 @Composable
 fun RecoveryScreen(
-    onBack: () -> Unit
+    userRepository: UserRepository? = null,
+    onBack: () -> Unit = {}
 ) {
     var correo by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
+    var sentSuccess by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val backgroundColor = Color(0xFFF6FBF7)
-    val brandGreen = Color(0xFF0F4C25)
-    val fieldBg = Color(0xFFE8F5E9)
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+    val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
+    val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
 
     fun validarCorreo(): Boolean {
         return if (!correo.contains("@")) {
@@ -72,10 +77,10 @@ fun RecoveryScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Recuperar Contraseña",
+                text = "Recuperación de Contraseña",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = mainTextColor,
                     fontSize = 22.sp
                 ),
                 textAlign = TextAlign.Center
@@ -84,29 +89,60 @@ fun RecoveryScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Ingresa tu correo registrado y te enviaremos las instrucciones de recuperación.",
-                style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
+                text = "Ingresa tu correo registrado y te enviaremos un enlace oficial para restablecer tu contraseña.",
+                style = MaterialTheme.typography.bodyMedium.copy(color = subTextColor),
                 textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            if (sentSuccess) {
+                Surface(
+                    color = Color(0xFFE8F5E9),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "✓ Enlace enviado con éxito",
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2E7D32),
+                            fontSize = 15.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Revisa tu bandeja de entrada en $correo para restablecer tu clave.",
+                            fontSize = 13.sp,
+                            color = Color.DarkGray,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "Correo electrónico",
+                    text = "Correo electrónico registrado",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.DarkGray
+                    color = subTextColor
                 )
                 TextField(
                     value = correo,
                     onValueChange = {
                         correo = it
                         if (emailError != null) emailError = null
+                        if (sentSuccess) sentSuccess = false
                     },
+                    placeholder = { Text("ejemplo@uniqundio.edu.co") },
                     modifier = Modifier.fillMaxWidth(),
                     isError = emailError != null,
                     shape = RoundedCornerShape(12.dp),
@@ -130,7 +166,9 @@ fun RecoveryScreen(
                 onClick = {
                     if (validarCorreo()) {
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Se han enviado instrucciones a tu correo")
+                            userRepository?.recuperarContrasena(correo)
+                            sentSuccess = true
+                            snackbarHostState.showSnackbar("Enlace de recuperación enviado a $correo")
                         }
                     }
                 },
@@ -141,9 +179,9 @@ fun RecoveryScreen(
                 shape = RoundedCornerShape(25.dp)
             ) {
                 Text(
-                    text = "ENVIAR INSTRUCCIONES",
+                    text = "ENVIAR ENLACE DE RECUPERACIÓN",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = Color.White
                 )
             }
@@ -152,7 +190,7 @@ fun RecoveryScreen(
 
             TextButton(onClick = onBack) {
                 Text(
-                    text = "Volver",
+                    text = "Volver al Inicio de Sesión",
                     color = brandGreen,
                     fontWeight = FontWeight.Bold
                 )

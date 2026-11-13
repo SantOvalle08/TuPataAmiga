@@ -1,8 +1,10 @@
 package co.edu.uniqundio.tupataamiga.data.di
 
 import co.edu.uniqundio.tupataamiga.data.repository.memory.MascotaRepositoryImpl
+import co.edu.uniqundio.tupataamiga.data.repository.memory.NotificacionRepositoryImpl
 import co.edu.uniqundio.tupataamiga.data.repository.memory.UserRepositoryImpl
 import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
+import co.edu.uniqundio.tupataamiga.domain.repository.NotificacionRepository
 import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
@@ -25,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindUserRepository(
         impl: UserRepositoryImpl
     ): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNotificacionRepository(
+        impl: NotificacionRepositoryImpl
+    ): NotificacionRepository
 }

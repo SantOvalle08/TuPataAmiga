@@ -3,39 +3,33 @@ package co.edu.uniqundio.tupataamiga.features.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.uniqundio.tupataamiga.domain.model.Comentario
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
-import co.edu.uniqundio.tupataamiga.domain.usecase.mascota.DeleteMascotaUseCase
-import co.edu.uniqundio.tupataamiga.domain.usecase.mascota.GetMascotaByIdUseCase
+import co.edu.uniqundio.tupataamiga.domain.model.Notificacion
+import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
+import co.edu.uniqundio.tupataamiga.domain.repository.NotificacionRepository
+import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
-data class Comentario(
-    val id: String = UUID.randomUUID().toString(),
-    val autor: String = "María Gómez",
-    val texto: String,
-    val tiempo: String = "Justo ahora",
-)
-
 data class DetailUiState(
     val mascota: Mascota? = null,
-    val comentarios: List<Comentario> = listOf(
-        Comentario(autor = "Ana Gómez", texto = "¡Qué tierno! ¿Sigue disponible?", tiempo = "hace 10 min"),
-        Comentario(autor = "Carlos Ruiz", texto = "Me interesa mucho para adopción.", tiempo = "hace 1 h"),
-    ),
     val nuevoComentarioTexto: String = "",
 )
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getMascotaByIdUseCase: GetMascotaByIdUseCase,
-    private val deleteMascotaUseCase: DeleteMascotaUseCase,
+    private val mascotaRepository: MascotaRepository,
+    private val userRepository: UserRepository,
+    private val notificacionRepository: NotificacionRepository
 ) : ViewModel() {
 
     private val mascotaId: String = savedStateHandle.get<String>("mascotaId") ?: ""
@@ -49,8 +43,10 @@ class DetailViewModel @Inject constructor(
 
     private fun loadMascota() {
         viewModelScope.launch {
-            val mascota = getMascotaByIdUseCase(mascotaId)
-            _uiState.update { it.copy(mascota = mascota) }
+            mascotaRepository.observeMascotas().collect { list ->
+                val encontrada = list.find { it.id == mascotaId }
+                _uiState.update { it.copy(mascota = encontrada) }
+            }
         }
     }
 
@@ -60,20 +56,61 @@ class DetailViewModel @Inject constructor(
 
     fun agregarComentario(onSuccess: () -> Unit) {
         val texto = _uiState.value.nuevoComentarioTexto.trim()
-        if (texto.isBlank()) return
-        val nuevo = Comentario(autor = "María Gómez", texto = texto, tiempo = "Justo ahora")
-        _uiState.update {
-            it.copy(
-                comentarios = listOf(nuevo) + it.comentarios,
-                nuevoComentarioTexto = "",
+        if (texto.isBlank() || mascotaId.isBlank()) return
+
+        viewModelScope.launch {
+            val user = userRepository.currentUser.value
+            val nombreAutor = user?.nombre ?: "Usuario PataAmiga"
+            val usuarioId = user?.id ?: "guest"
+
+            val nuevoComentario = Comentario(
+                id = UUID.randomUUID().toString(),
+                usuarioId = usuarioId,
+                nombreUsuario = nombreAutor,
+                texto = texto,
+                fecha = "hace un momento"
+            )
+
+            mascotaRepository.agregarComentario(mascotaId, nuevoComentario)
+
+            val mascotaActual = _uiState.value.mascota
+            notificacionRepository.agregarNotificacion(
+                Notificacion(
+                    id = System.currentTimeMillis().toString(),
+                    titulo = "Nuevo comentario",
+                    cuerpo = "$nombreAutor comentó en la publicación \"${mascotaActual?.nombre ?: "Mascota"}\"",
+                    tiempo = "hace un momento",
+                    tipo = "COMENTARIO",
+                    leido = false
+                )
+            )
+
+            _uiState.update { it.copy(nuevoComentarioTexto = "") }
+            onSuccess()
+        }
+    }
+
+    fun marcarInteres() {
+        if (mascotaId.isBlank()) return
+        viewModelScope.launch {
+            mascotaRepository.incrementarInteres(mascotaId)
+            val mascotaActual = _uiState.value.mascota
+            notificacionRepository.agregarNotificacion(
+                Notificacion(
+                    id = System.currentTimeMillis().toString(),
+                    titulo = "Persona interesada",
+                    cuerpo = "Marcaste interés en adoptar a \"${mascotaActual?.nombre ?: "Mascota"}\"",
+                    tiempo = "hace un momento",
+                    tipo = "INTERES",
+                    leido = false
+                )
             )
         }
-        onSuccess()
     }
 
     fun deleteMascota(onDeleted: () -> Unit) {
         viewModelScope.launch {
-            deleteMascotaUseCase(mascotaId)
+            mascotaRepository.deleteMascota(mascotaId)
             onDeleted()
         }
     }

@@ -264,11 +264,13 @@ fun FeedScreen(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            // Estado Badge
-                                            val (badgeBg, badgeFg) = when (mascota.estado) {
-                                                EstadoPublicacion.PERDIDO -> Color(0xFFFFEBEE) to Color(0xFFC62828)
-                                                EstadoPublicacion.ADOPCION -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-                                                EstadoPublicacion.ENCONTRADO -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                                            // Categoria Badge
+                                            val (badgeBg, badgeFg) = when (mascota.categoria) {
+                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.PERDIDO -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.ADOPCION -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.ENCONTRADO -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.HOGAR_TEMPORAL -> Color(0xFFFFF8E1) to Color(0xFFF57F17)
+                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.JORNADA_VETERINARIA -> Color(0xFFF3E5F5) to Color(0xFF7B1FA2)
                                             }
 
                                             Surface(
@@ -276,7 +278,7 @@ fun FeedScreen(
                                                 shape = RoundedCornerShape(12.dp)
                                             ) {
                                                 Text(
-                                                    text = mascota.estado.name.lowercase().replaceFirstChar { it.uppercase() },
+                                                    text = mascota.categoria.name,
                                                     color = badgeFg,
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 11.sp,

@@ -110,6 +110,10 @@ class UserRepositoryImpl @Inject constructor(
         return true
     }
 
+    override suspend fun recuperarContrasena(correo: String): Boolean {
+        return usuarios.containsKey(correo.lowercase().trim()) || correo.contains("@")
+    }
+
     override fun setGuestSession() {
         _currentUser.value = null
         prefs.edit().putString("active_session_email", "GUEST").apply()

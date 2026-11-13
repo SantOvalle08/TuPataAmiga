@@ -1,0 +1,86 @@
+<resources>
+    <string name="app_name">PataAmiga</string>
+    <string name="app_tagline">Pet Adoption and Rescue Network</string>
+
+    <!-- Authentication & Login -->
+    <string name="login_title">Log In</string>
+    <string name="register_title">Create Account</string>
+    <string name="email_label">Email Address</string>
+    <string name="password_label">Password</string>
+    <string name="login_button">Sign In</string>
+    <string name="register_button">Sign Up</string>
+    <string name="guest_button">Continue as Guest</string>
+    <string name="forgot_password">Forgot your password?</string>
+    <string name="recovery_title">Password Recovery</string>
+    <string name="recovery_instruction">Enter your registered email address to receive a recovery link.</string>
+    <string name="send_recovery_link">Send Recovery Link</string>
+    <string name="back_to_login">Back to Sign In</string>
+
+    <!-- Navigation Dashboard -->
+    <string name="nav_home">Home</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_alerts">Alerts</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Posts Feed -->
+    <string name="feed_title">Pets in PataAmiga</string>
+    <string name="feed_search_placeholder">Search by name, breed, or location…</string>
+    <string name="filter_all">All</string>
+    <string name="filter_adoption">Adoption</string>
+    <string name="filter_lost">Lost</string>
+    <string name="filter_found">Found</string>
+    <string name="filter_foster">Temporary Foster</string>
+    <string name="filter_veterinary">Vet Drive</string>
+
+    <!-- Create Post -->
+    <string name="create_title">New Post</string>
+    <string name="category_label">CATEGORY</string>
+    <string name="animal_type_label">ANIMAL TYPE</string>
+    <string name="breed_label">Approximate Breed</string>
+    <string name="size_label">SIZE</string>
+    <string name="vaccines_label">Vaccines up to date?</string>
+    <string name="location_label">Location</string>
+    <string name="additional_needs_label">Additional Need / Special Support</string>
+    <string name="description_label">Pet Description</string>
+    <string name="publish_button">Submit for Moderation</string>
+
+    <!-- Pet Detail -->
+    <string name="detail_title">Pet Detail</string>
+    <string name="contact_owner">Contact Publisher</string>
+    <string name="mark_interest">I Want to Adopt</string>
+    <string name="comments_section">Comments</string>
+    <string name="write_comment">Write a comment…</string>
+    <string name="send_comment">Send</string>
+    <string name="delete_post">Delete Post</string>
+
+    <!-- Moderation Panel -->
+    <string name="moderation_panel_title">Moderation Panel</string>
+    <string name="pending_review_title">POSTS PENDING REVIEW</string>
+    <string name="approve_button">Approve</string>
+    <string name="reject_button">Reject</string>
+    <string name="rejection_reason_title">Rejection Reason</string>
+    <string name="ai_summary_title">AI Moderation Summary</string>
+
+    <!-- Notifications -->
+    <string name="notifications_title">Notifications</string>
+    <string name="mark_all_read">Mark as Read</string>
+    <string name="verified_posts_title">Verified Posts</string>
+
+    <!-- Profile & Settings -->
+    <string name="profile_title">My Profile</string>
+    <string name="my_publications">My Posts</string>
+    <string name="my_interests">My Adoption Interests</string>
+    <string name="achievements_badges">Achievements &amp; Badges</string>
+    <string name="personal_stats">Personal Statistics</string>
+    <string name="app_settings">App Settings</string>
+    <string name="edit_profile">Edit Personal Data</string>
+    <string name="logout">Log Out</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="app_language">App Language</string>
+    <string name="sound_effects">Alert Sound Effects</string>
+    <string name="vibration_effects">Notification Vibration</string>
+    <string name="terms_and_conditions">Terms and Conditions of Use</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="about_app">About PataAmiga</string>
+</resources>

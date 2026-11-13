@@ -79,7 +79,7 @@ fun AppNavigation() {
             )
         }
         composable(
-            route = MainRoutes.Detail.route,
+            route = "detail/{mascotaId}",
             arguments = listOf(navArgument("mascotaId") { type = NavType.StringType })
         ) {
             val viewModel: DetailViewModel = hiltViewModel()

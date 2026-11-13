@@ -8,6 +8,7 @@ interface UserRepository {
 
     suspend fun login(correo: String, clave: String): Usuario?
     suspend fun register(usuario: Usuario, clave: String): Boolean
+    suspend fun recuperarContrasena(correo: String): Boolean
     fun setGuestSession()
     fun logout()
     suspend fun updateUserProfile(nombre: String, correo: String): Boolean

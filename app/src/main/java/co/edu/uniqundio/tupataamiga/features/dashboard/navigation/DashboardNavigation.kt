@@ -61,11 +61,8 @@ fun DashboardNavigation(
             )
         }
         composable(DashboardRoutes.Map.route) {
-            PlaceholderTabScreen(
-                title = "Mapa de Mascotas",
-                icon = Icons.Default.Map,
-                message = "Explora las publicaciones cercanas en Armenia, Quindío.",
-                brandGreen = brandGreen,
+            co.edu.uniqundio.tupataamiga.features.dashboard.MapScreen(
+                onMascotaClick = onMascotaClick
             )
         }
         composable(DashboardRoutes.Alerts.route) {
