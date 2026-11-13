@@ -1,6 +1,7 @@
 package co.edu.uniqundio.tupataamiga.data.repository.memory
 
 import android.content.Context
+import androidx.core.content.edit
 import co.edu.uniqundio.tupataamiga.domain.model.Rol
 import co.edu.uniqundio.tupataamiga.domain.model.Usuario
 import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
@@ -15,7 +16,7 @@ import javax.inject.Singleton
 
 @Singleton
 class UserRepositoryImpl @Inject constructor(
-    @ApplicationContext context: Context
+    @ApplicationContext context: Context,
 ) : UserRepository {
 
     private val prefs = context.getSharedPreferences("user_repository_prefs", Context.MODE_PRIVATE)
@@ -32,14 +33,7 @@ class UserRepositoryImpl @Inject constructor(
     private fun loadUsers() {
         val savedJson = prefs.getString("users_list", null)
         if (savedJson.isNullOrEmpty()) {
-            val defaultUsers: List<Pair<Usuario, String>> = listOf(
-                Pair(Usuario("1", "Admin", "admin@uniquindio.edu.co", Rol.MODERADOR), "1234"),
-                Pair(Usuario("2", "Usuario", "user@uniquindio.edu.co", Rol.USUARIO), "1234")
-            )
-            defaultUsers.forEach { (usr, pwd) ->
-                usuarios[usr.correo] = Pair(usr, pwd)
-            }
-            saveUsersToDisk()
+            seedDefaultUsers()
         } else {
             try {
                 val array = JSONArray(savedJson)
@@ -55,15 +49,35 @@ class UserRepositoryImpl @Inject constructor(
                     val usuario = Usuario(id, nombre, correo, rol)
                     usuarios[correo] = Pair(usuario, clave)
                 }
+                // Ensure default admin always exists with valid password
+                if (!usuarios.containsKey("admin@uniqundio.edu.co")) {
+                    usuarios["admin@uniqundio.edu.co"] = Pair(
+                        Usuario("1", "Admin", "admin@uniqundio.edu.co", Rol.MODERADOR),
+                        "admin1234",
+                    )
+                    saveUsersToDisk()
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
+                seedDefaultUsers()
             }
         }
     }
 
+    private fun seedDefaultUsers() {
+        usuarios.clear()
+        val defaultUsers: List<Pair<Usuario, String>> = listOf(
+            Pair(Usuario("1", "Admin", "admin@uniqundio.edu.co", Rol.MODERADOR), "admin1234"),
+            Pair(Usuario("2", "Usuario", "user@uniqundio.edu.co", Rol.USUARIO), "user1234"),
+        )
+        defaultUsers.forEach { (usr, pwd) ->
+            usuarios[usr.correo] = Pair(usr, pwd)
+        }
+        saveUsersToDisk()
+    }
+
     private fun restoreSession() {
         val activeEmail = prefs.getString("active_session_email", null)
-        if (!activeEmail.isNullOrEmpty() && activeEmail != "GUEST") {
+        if ((!activeEmail.isNullOrEmpty() && activeEmail != "GUEST")) {
             val user = usuarios[activeEmail]?.first
             _currentUser.value = user
         } else {
@@ -84,7 +98,7 @@ class UserRepositoryImpl @Inject constructor(
                 }
                 array.put(obj)
             }
-            prefs.edit().putString("users_list", array.toString()).apply()
+            prefs.edit { putString("users_list", array.toString()) }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -95,7 +109,7 @@ class UserRepositoryImpl @Inject constructor(
         if (entry != null && entry.second == clave) {
             val user = entry.first
             _currentUser.value = user
-            prefs.edit().putString("active_session_email", user.correo).apply()
+            prefs.edit { putString("active_session_email", user.correo) }
             return user
         }
         return null
@@ -106,24 +120,24 @@ class UserRepositoryImpl @Inject constructor(
         usuarios[usuario.correo] = Pair(usuario, clave)
         saveUsersToDisk()
         _currentUser.value = usuario
-        prefs.edit().putString("active_session_email", usuario.correo).apply()
+        prefs.edit { putString("active_session_email", usuario.correo) }
         return true
     }
 
     override fun setGuestSession() {
         _currentUser.value = null
-        prefs.edit().putString("active_session_email", "GUEST").apply()
+        prefs.edit { putString("active_session_email", "GUEST") }
     }
 
     override fun logout() {
         _currentUser.value = null
-        prefs.edit().putString("active_session_email", "GUEST").apply()
+        prefs.edit { putString("active_session_email", "GUEST") }
     }
 
     override suspend fun updateUserProfile(nombre: String, correo: String): Boolean {
         val current = _currentUser.value ?: return false
         val oldEmail = current.correo
-        val pwd = usuarios[oldEmail]?.second ?: "1234"
+        val pwd = usuarios[oldEmail]?.second ?: "admin1234"
 
         val updatedUser = current.copy(nombre = nombre, correo = correo)
         usuarios.remove(oldEmail)
@@ -131,7 +145,7 @@ class UserRepositoryImpl @Inject constructor(
         saveUsersToDisk()
 
         _currentUser.value = updatedUser
-        prefs.edit().putString("active_session_email", correo).apply()
+        prefs.edit { putString("active_session_email", correo) }
         return true
     }
 
