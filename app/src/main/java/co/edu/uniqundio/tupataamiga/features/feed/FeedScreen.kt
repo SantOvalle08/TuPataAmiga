@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Pets
@@ -22,12 +23,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.edu.uniqundio.tupataamiga.domain.model.Categoria
 import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +52,9 @@ fun FeedScreen(
         mascotas.filter { mascota: Mascota ->
             val matchesQuery = searchQuery.isBlank() ||
                     mascota.nombre.contains(searchQuery, ignoreCase = true) ||
-                    mascota.descripcion.contains(searchQuery, ignoreCase = true)
+                    mascota.descripcion.contains(searchQuery, ignoreCase = true) ||
+                    mascota.raza.contains(searchQuery, ignoreCase = true) ||
+                    mascota.ubicacion.contains(searchQuery, ignoreCase = true)
 
             val matchesFilter = selectedEstadoFilter == null || mascota.estado == selectedEstadoFilter
 
@@ -240,20 +246,29 @@ fun FeedScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.Top
                                 ) {
-                                    // Pet Image/Thumbnail Container
+                                    // Foto real de la mascota
                                     Box(
                                         modifier = Modifier
-                                            .size(80.dp)
+                                            .size(84.dp)
                                             .clip(RoundedCornerShape(16.dp))
                                             .background(fieldBg),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Pets,
-                                            contentDescription = null,
-                                            tint = brandGreen,
-                                            modifier = Modifier.size(40.dp)
-                                        )
+                                        if (mascota.imagenUrl.isNotBlank()) {
+                                            AsyncImage(
+                                                model = mascota.imagenUrl,
+                                                contentDescription = mascota.nombre,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.Default.Pets,
+                                                contentDescription = null,
+                                                tint = brandGreen,
+                                                modifier = Modifier.size(40.dp)
+                                            )
+                                        }
                                     }
 
                                     Spacer(modifier = Modifier.width(14.dp))
@@ -264,13 +279,12 @@ fun FeedScreen(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            // Categoria Badge
                                             val (badgeBg, badgeFg) = when (mascota.categoria) {
-                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.PERDIDO -> Color(0xFFFFEBEE) to Color(0xFFC62828)
-                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.ADOPCION -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.ENCONTRADO -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
-                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.HOGAR_TEMPORAL -> Color(0xFFFFF8E1) to Color(0xFFF57F17)
-                                                co.edu.uniqundio.tupataamiga.domain.model.Categoria.JORNADA_VETERINARIA -> Color(0xFFF3E5F5) to Color(0xFF7B1FA2)
+                                                Categoria.PERDIDO -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+                                                Categoria.ADOPCION -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                                                Categoria.ENCONTRADO -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                                                Categoria.HOGAR_TEMPORAL -> Color(0xFFFFF8E1) to Color(0xFFF57F17)
+                                                Categoria.JORNADA_VETERINARIA -> Color(0xFFF3E5F5) to Color(0xFF7B1FA2)
                                             }
 
                                             Surface(
@@ -278,7 +292,7 @@ fun FeedScreen(
                                                 shape = RoundedCornerShape(12.dp)
                                             ) {
                                                 Text(
-                                                    text = mascota.categoria.name,
+                                                    text = mascota.categoria.name.replace("_", " "),
                                                     color = badgeFg,
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 11.sp,
@@ -286,13 +300,21 @@ fun FeedScreen(
                                                 )
                                             }
 
-                                            // Verified Checkmark Icon
-                                            Icon(
-                                                imageVector = Icons.Default.CheckCircle,
-                                                contentDescription = "Verificado",
-                                                tint = Color(0xFF1E88E5),
-                                                modifier = Modifier.size(18.dp)
-                                            )
+                                            if (mascota.estado == EstadoPublicacion.APROBADO) {
+                                                Icon(
+                                                    imageVector = Icons.Default.CheckCircle,
+                                                    contentDescription = "Verificado",
+                                                    tint = Color(0xFF1E88E5),
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            } else if (mascota.estado == EstadoPublicacion.PENDIENTE) {
+                                                Icon(
+                                                    imageVector = Icons.Default.HourglassEmpty,
+                                                    contentDescription = "Pendiente",
+                                                    tint = Color(0xFFF57F17),
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
                                         }
 
                                         Spacer(modifier = Modifier.height(4.dp))
@@ -309,8 +331,9 @@ fun FeedScreen(
 
                                         Spacer(modifier = Modifier.height(2.dp))
 
+                                        val tamanoTexto = mascota.tamano.name.lowercase().replaceFirstChar { it.uppercase() }
                                         Text(
-                                            text = "${mascota.categoria.name.lowercase().replaceFirstChar { it.uppercase() }} · Mediano",
+                                            text = "${mascota.raza} · $tamanoTexto",
                                             fontSize = 12.sp,
                                             color = Color.Gray
                                         )
@@ -326,9 +349,11 @@ fun FeedScreen(
                                             )
                                             Spacer(modifier = Modifier.width(2.dp))
                                             Text(
-                                                text = "El Bosque, Armenia",
+                                                text = mascota.ubicacion.ifBlank { "Armenia, Quindío" },
                                                 fontSize = 11.sp,
-                                                color = Color.Gray
+                                                color = Color.Gray,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                         }
                                     }
@@ -338,7 +363,7 @@ fun FeedScreen(
                                 HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                // Footer with Likes, Comments and Action Button
+                                // Footer con Likes y Botón de Acción
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -346,7 +371,6 @@ fun FeedScreen(
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                                         modifier = Modifier.clickable {
                                             if (isLiked) {
                                                 isLiked = false
@@ -357,16 +381,20 @@ fun FeedScreen(
                                             }
                                         }
                                     ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(
-                                                imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                                contentDescription = "Me gusta",
-                                                tint = if (isLiked) Color(0xFFE53935) else Color.Gray,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(text = "$likesCount", fontSize = 12.sp, color = Color.DarkGray)
-                                        }
+                                        Icon(
+                                            imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                            contentDescription = "Me gusta",
+                                            tint = if (isLiked) Color(0xFFE53935) else Color.Gray,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(text = "$likesCount", fontSize = 12.sp, color = Color.DarkGray)
+                                    }
+
+                                    val textoBoton = when (mascota.categoria) {
+                                        Categoria.ADOPCION -> "Adoptar"
+                                        Categoria.PERDIDO, Categoria.ENCONTRADO -> "Reportar"
+                                        else -> "Ver detalle"
                                     }
 
                                     Surface(
@@ -375,7 +403,7 @@ fun FeedScreen(
                                         modifier = Modifier.clickable { onMascotaClick(mascota.id) }
                                     ) {
                                         Text(
-                                            text = "Adoptar",
+                                            text = textoBoton,
                                             color = brandGreen,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 12.sp,

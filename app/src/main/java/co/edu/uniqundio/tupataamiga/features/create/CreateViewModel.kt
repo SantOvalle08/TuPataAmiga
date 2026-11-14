@@ -1,22 +1,27 @@
 package co.edu.uniqundio.tupataamiga.features.create
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniqundio.tupataamiga.domain.model.*
 import co.edu.uniqundio.tupataamiga.domain.usecase.mascota.CreateMascotaUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateViewModel @Inject constructor(
-    private val createMascotaUseCase: CreateMascotaUseCase
+    private val createMascotaUseCase: CreateMascotaUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CreateUiState())
@@ -58,7 +63,9 @@ class CreateViewModel @Inject constructor(
     }
 
     fun onUbicacionChanged(ubicacion: String) {
-        _uiState.update { it.copy(ubicacion = ubicacion) }
+        if (ubicacion.isNotBlank()) {
+            _uiState.update { it.copy(ubicacion = ubicacion.trim()) }
+        }
     }
 
     fun onNecesidadAdicionalChanged(necesidad: String) {
@@ -67,13 +74,31 @@ class CreateViewModel @Inject constructor(
 
     fun onFotosAgregadas(nuevasUris: List<Uri>) {
         _uiState.update { state ->
-            state.copy(fotosSeleccionadas = (state.fotosSeleccionadas + nuevasUris).distinct())
+            val combinadas = (state.fotosSeleccionadas + nuevasUris).distinct().take(5)
+            state.copy(fotosSeleccionadas = combinadas)
         }
     }
 
     fun onFotoEliminada(uri: Uri) {
         _uiState.update { state ->
             state.copy(fotosSeleccionadas = state.fotosSeleccionadas.filter { it != uri })
+        }
+    }
+
+    private fun persistirImagenLocal(uri: Uri): String {
+        return try {
+            if (uri.scheme == "file") return uri.toString()
+            val dir = File(context.filesDir, "mascotas").apply { mkdirs() }
+            val destFile = File(dir, "mascota_${UUID.randomUUID()}.jpg")
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                FileOutputStream(destFile).use { output ->
+                    input.copyTo(output)
+                }
+            }
+            Uri.fromFile(destFile).toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            uri.toString()
         }
     }
 
@@ -96,8 +121,12 @@ class CreateViewModel @Inject constructor(
             try {
                 _uiState.update { it.copy(isLoading = true) }
 
-                val imagenFinal = state.fotosSeleccionadas.firstOrNull()?.toString()
-                    ?: randomImages.random()
+                val primeraFoto = state.fotosSeleccionadas.firstOrNull()
+                val imagenFinal = if (primeraFoto != null) {
+                    persistirImagenLocal(primeraFoto)
+                } else {
+                    randomImages.random()
+                }
 
                 val mascota = Mascota(
                     id = UUID.randomUUID().toString(),
@@ -120,7 +149,7 @@ class CreateViewModel @Inject constructor(
 
                 createMascotaUseCase(mascota)
 
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.value = CreateUiState()
                 onSuccess()
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false) }
