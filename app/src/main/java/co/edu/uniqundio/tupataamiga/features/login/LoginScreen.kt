@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.R
+import co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -33,9 +34,12 @@ fun LoginScreen(
     var passwordError by remember { mutableStateOf<String?>(value = null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val backgroundColor = Color(0xFFF6FBF7)
-    val brandGreen = Color(0xFF0F4C25)
-    val fieldBg = Color(0xFFE8F5E9)
+
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+    val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
+    val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
 
     fun mostrarSnackbar(mensaje: String) {
         scope.launch {
@@ -46,19 +50,19 @@ fun LoginScreen(
     fun validarFormulario(): Boolean {
         var esValido = true
         if (!uiState.correo.contains("@")) {
-            emailError = "El correo debe incluir un '@'"
+            emailError = LocaleManager.tr("El correo debe incluir un '@'", "Email must include an '@'")
             esValido = false
         } else {
             emailError = null
         }
-        if (uiState.clave.length < 8) {
-            passwordError = "La contraseña debe tener al menos 8 caracteres"
+        if (uiState.clave.length < 4) {
+            passwordError = LocaleManager.tr("Ingresa una contraseña válida", "Enter a valid password")
             esValido = false
         } else {
             passwordError = null
         }
         if (!esValido) {
-            mostrarSnackbar("Revisa el correo y la contraseña")
+            mostrarSnackbar(LocaleManager.tr("Revisa el correo y la contraseña", "Please check your email and password"))
         }
         return esValido
     }
@@ -80,7 +84,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(12.dp))
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(72.dp)
                     .clip(RoundedCornerShape(20.dp))
                     .background(brandGreen),
                 contentAlignment = Alignment.Center,
@@ -88,39 +92,39 @@ fun LoginScreen(
                 Image(
                     painter = painterResource(R.drawable.logo_pataamiga),
                     contentDescription = "Logo PataAmiga",
-                    modifier = Modifier.size(54.dp),
+                    modifier = Modifier.size(50.dp),
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             Text(
-                text = "Bienvenido de nuevo",
+                text = LocaleManager.tr("Bienvenido de nuevo", "Welcome back"),
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    fontSize = 22.sp,
+                    color = mainTextColor,
+                    fontSize = 20.sp,
                 ),
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Inicia sesión en PataAmiga",
+                text = LocaleManager.tr("Inicia sesión en PataAmiga", "Sign in to PataAmiga"),
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.Gray,
-                    fontSize = 13.sp,
+                    color = subTextColor,
+                    fontSize = 12.sp,
                 ),
                 textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Correo electrónico",
-                        fontSize = 13.sp,
+                        text = LocaleManager.tr("Correo electrónico", "Email address"),
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray,
+                        color = subTextColor,
                     )
                     TextField(
                         value = uiState.correo,
@@ -147,16 +151,16 @@ fun LoginScreen(
                         Text(
                             text = it,
                             color = MaterialTheme.colorScheme.error,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                         )
                     }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Contraseña",
-                        fontSize = 13.sp,
+                        text = LocaleManager.tr("Contraseña", "Password"),
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray,
+                        color = subTextColor,
                     )
                     TextField(
                         value = uiState.clave,
@@ -184,7 +188,7 @@ fun LoginScreen(
                         Text(
                             text = it,
                             color = MaterialTheme.colorScheme.error,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                         )
                     }
                 }
@@ -192,7 +196,7 @@ fun LoginScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp),
+                    .padding(top = 2.dp),
                 contentAlignment = Alignment.CenterEnd,
             ) {
                 TextButton(
@@ -200,69 +204,52 @@ fun LoginScreen(
                     enabled = !uiState.isLoading,
                 ) {
                     Text(
-                        text = "¿Olvidaste tu contraseña?",
+                        text = LocaleManager.tr("¿Olvidaste tu contraseña?", "Forgot your password?"),
                         color = brandGreen,
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             Button(
                 onClick = {
                     if (validarFormulario()) {
                         viewModel.login(
                             onSuccess = {
-                                mostrarSnackbar("¡Inicio de sesión exitoso!")
+                                mostrarSnackbar(LocaleManager.tr("¡Inicio de sesión exitoso!", "Sign in successful!"))
                                 scope.launch {
                                     delay(600.milliseconds)
                                     onLoginSuccess()
                                 }
                             },
                             onError = { error ->
-                                val msg = error.lowercase()
-                                when {
-                                    msg.contains("correo") ||
-                                            msg.contains("user") ||
-                                            msg.contains("usuario") -> {
-                                        emailError = "El correo electrónico es incorrecto o no existe"
-                                        mostrarSnackbar("El correo electrónico es incorrecto o no existe")
-                                    }
-                                    msg.contains("clave") ||
-                                            msg.contains("contraseña") ||
-                                            msg.contains("password") -> {
-                                        passwordError = "La contraseña es incorrecta"
-                                        mostrarSnackbar("La contraseña es incorrecta")
-                                    }
-                                    else -> {
-                                        emailError = "Correo o contraseña incorrectos"
-                                        passwordError = "Correo o contraseña incorrectos"
-                                        mostrarSnackbar("Correo o contraseña incorrectos")
-                                    }
-                                }
+                                emailError = LocaleManager.tr("Correo o contraseña incorrectos", "Incorrect email or password")
+                                passwordError = LocaleManager.tr("Correo o contraseña incorrectos", "Incorrect email or password")
+                                mostrarSnackbar(LocaleManager.tr("Correo o contraseña incorrectos", "Incorrect email or password"))
                             },
                         )
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(46.dp),
                 enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = brandGreen,
                 ),
-                shape = RoundedCornerShape(25.dp),
+                shape = RoundedCornerShape(23.dp),
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(20.dp),
                         color = Color.White,
                     )
                 } else {
                     Text(
-                        text = "INICIAR SESIÓN",
+                        text = LocaleManager.tr("INICIAR SESIÓN", "LOG IN"),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
+                        fontSize = 13.sp,
                         color = Color.White,
                     )
                 }
@@ -274,9 +261,9 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "¿No tienes cuenta? ",
-                    color = Color.Gray,
-                    fontSize = 14.sp,
+                    text = LocaleManager.tr("¿No tienes cuenta? ", "Don't have an account? "),
+                    color = subTextColor,
+                    fontSize = 12.sp,
                 )
                 TextButton(
                     onClick = onBack,
@@ -284,10 +271,10 @@ fun LoginScreen(
                     contentPadding = PaddingValues(0.dp),
                 ) {
                     Text(
-                        text = "Regístrate",
+                        text = LocaleManager.tr("Regístrate", "Sign Up"),
                         color = brandGreen,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                     )
                 }
             }

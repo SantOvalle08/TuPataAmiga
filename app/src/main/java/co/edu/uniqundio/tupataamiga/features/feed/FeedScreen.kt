@@ -108,7 +108,7 @@ fun FeedScreen(
                 containerColor = brandGreen,
                 contentColor = Color.White,
                 icon = { Icon(Icons.Default.Add, contentDescription = "Crear publicación") },
-                text = { Text("Publicar", fontWeight = FontWeight.Bold) },
+                text = { Text(co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Publicar", "Post"), fontWeight = FontWeight.Bold) },
                 shape = RoundedCornerShape(24.dp)
             )
         }
@@ -126,7 +126,7 @@ fun FeedScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
-                placeholder = { Text("Buscar mascotas...") },
+                placeholder = { Text(co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Buscar mascotas...", "Search pets...")) },
                 leadingIcon = { Icon(Icons.Default.Pets, contentDescription = "Buscar", tint = brandGreen) },
                 shape = RoundedCornerShape(24.dp),
                 singleLine = true,
@@ -149,7 +149,7 @@ fun FeedScreen(
                     FilterChip(
                         selected = selectedEstadoFilter == null,
                         onClick = { selectedEstadoFilter = null },
-                        label = { Text("Todos") },
+                        label = { Text(co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Todos", "All")) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = brandGreen,
                             selectedLabelColor = Color.White
@@ -157,10 +157,16 @@ fun FeedScreen(
                     )
                 }
                 items(EstadoPublicacion.entries.toTypedArray()) { estado ->
+                    val estadoNombre = when (estado) {
+                        EstadoPublicacion.PENDIENTE -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Pendiente", "Pending")
+                        EstadoPublicacion.APROBADO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Aprobado", "Approved")
+                        EstadoPublicacion.RECHAZADO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Rechazado", "Rejected")
+                        EstadoPublicacion.FINALIZADO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Finalizado", "Resolved")
+                    }
                     FilterChip(
                         selected = selectedEstadoFilter == estado,
                         onClick = { selectedEstadoFilter = if (selectedEstadoFilter == estado) null else estado },
-                        label = { Text(estado.name.lowercase().replaceFirstChar { it.uppercase() }) },
+                        label = { Text(estadoNombre) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = brandGreen,
                             selectedLabelColor = Color.White
@@ -287,12 +293,20 @@ fun FeedScreen(
                                                 Categoria.JORNADA_VETERINARIA -> Color(0xFFF3E5F5) to Color(0xFF7B1FA2)
                                             }
 
+                                            val catTexto = when (mascota.categoria) {
+                                                Categoria.ADOPCION -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("ADOPCION", "ADOPTION")
+                                                Categoria.PERDIDO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("PERDIDO", "LOST")
+                                                Categoria.ENCONTRADO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("ENCONTRADO", "FOUND")
+                                                Categoria.HOGAR_TEMPORAL -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("HOGAR TEMPORAL", "FOSTER HOME")
+                                                Categoria.JORNADA_VETERINARIA -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("JORNADA VET", "VET DRIVE")
+                                            }
+
                                             Surface(
                                                 color = badgeBg,
                                                 shape = RoundedCornerShape(12.dp)
                                             ) {
                                                 Text(
-                                                    text = mascota.categoria.name.replace("_", " "),
+                                                    text = catTexto,
                                                     color = badgeFg,
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 11.sp,
@@ -392,9 +406,9 @@ fun FeedScreen(
                                     }
 
                                     val textoBoton = when (mascota.categoria) {
-                                        Categoria.ADOPCION -> "Adoptar"
-                                        Categoria.PERDIDO, Categoria.ENCONTRADO -> "Reportar"
-                                        else -> "Ver detalle"
+                                        Categoria.ADOPCION -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Adoptar", "Adopt")
+                                        Categoria.PERDIDO, Categoria.ENCONTRADO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Reportar", "Report")
+                                        else -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Ver detalle", "View Detail")
                                     }
 
                                     Surface(

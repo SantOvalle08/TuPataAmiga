@@ -104,7 +104,7 @@ fun MapScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Mapa de Mascotas",
+                            text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Mapa de Mascotas", "Pets Map"),
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = mainTextColor
@@ -173,18 +173,26 @@ fun MapScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
+                val filterList = listOf(
+                    "Todos" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Todos", "All"),
+                    "Adopción" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Adopción", "Adoption"),
+                    "Perdidos" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Perdidos", "Lost"),
+                    "Encontrados" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Encontrados", "Found"),
+                    "Hogar Temporal" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Hogar Temporal", "Foster Home")
+                )
+
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(listOf("Todos", "Adopción", "Perdidos", "Encontrados", "Hogar Temporal")) { filter ->
+                    items(filterList) { (keyFilter, labelFilter) ->
                         FilterChip(
-                            selected = selectedFilter == filter,
+                            selected = selectedFilter == keyFilter,
                             onClick = {
-                                selectedFilter = filter
-                                val nuevas = if (filter == "Todos") petMarkers else petMarkers.filter { it.categoria == filter }
+                                selectedFilter = keyFilter
+                                val nuevas = if (keyFilter == "Todos") petMarkers else petMarkers.filter { it.categoria == keyFilter }
                                 if (nuevas.none { it.id == selectedMarker?.id }) {
                                     selectedMarker = nuevas.firstOrNull()
                                 }
                             },
-                            label = { Text(filter) },
+                            label = { Text(labelFilter) },
                             colors = FilterChipDefaults.filterChipColors(
                                 containerColor = Color.White,
                                 selectedContainerColor = brandGreen,
@@ -337,7 +345,7 @@ fun MapScreen(
                                 shape = RoundedCornerShape(14.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                             ) {
-                                Text("Ver", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                Text(co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Ver", "View"), fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

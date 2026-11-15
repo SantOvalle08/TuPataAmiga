@@ -11,17 +11,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.features.dashboard.navigation.DashboardDestination
+import co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager
 
 @Composable
 fun BottomNavigationBar(
     currentDestination: DashboardDestination,
     onDestinationSelected: (DashboardDestination) -> Unit
 ) {
-    val brandGreen = Color(0xFF0F4C25)
-    val indicatorBg = Color(0xFFE8F5E9)
+    val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
+    val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
 
     NavigationBar(
-        containerColor = Color.White
+        containerColor = cardBg
     ) {
         DashboardDestination.entries.forEach { destination ->
             val icon = when (destination) {
@@ -31,18 +32,25 @@ fun BottomNavigationBar(
                 DashboardDestination.PERFIL -> Icons.Default.Person
             }
 
+            val labelText = when (destination) {
+                DashboardDestination.INICIO -> LocaleManager.tr("Inicio", "Home")
+                DashboardDestination.MAPA -> LocaleManager.tr("Mapa", "Map")
+                DashboardDestination.ALERTAS -> LocaleManager.tr("Alertas", "Alerts")
+                DashboardDestination.PERFIL -> LocaleManager.tr("Perfil", "Profile")
+            }
+
             NavigationBarItem(
                 selected = currentDestination == destination,
                 onClick = { onDestinationSelected(destination) },
                 icon = {
                     Icon(
                         imageVector = icon,
-                        contentDescription = destination.title
+                        contentDescription = labelText
                     )
                 },
                 label = {
                     Text(
-                        text = destination.title,
+                        text = labelText,
                         fontWeight = if (currentDestination == destination) FontWeight.Bold else FontWeight.Normal,
                         fontSize = 12.sp
                     )
@@ -50,7 +58,7 @@ fun BottomNavigationBar(
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = brandGreen,
                     selectedTextColor = brandGreen,
-                    indicatorColor = indicatorBg,
+                    indicatorColor = brandGreen.copy(alpha = 0.15f),
                     unselectedIconColor = Color.DarkGray,
                     unselectedTextColor = Color.Gray
                 )

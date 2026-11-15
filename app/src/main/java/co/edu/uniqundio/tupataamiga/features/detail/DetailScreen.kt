@@ -203,7 +203,7 @@ fun DetailScreen(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Verificado",
+                            text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Verificado", "Verified"),
                             color = Color(0xFF1E88E5),
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
@@ -244,7 +244,7 @@ fun DetailScreen(
                             fontSize = 13.sp,
                         )
                         Text(
-                            text = "hace 2 horas",
+                            text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("hace 2 horas", "2 hours ago"),
                             color = Color.Gray,
                             fontSize = 11.sp,
                         )
@@ -262,17 +262,17 @@ fun DetailScreen(
                     Column(modifier = Modifier.padding(14.dp)) {
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(text = "Tipo", fontSize = 11.sp, color = Color.Gray)
+                                Text(text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Tipo", "Type"), fontSize = 11.sp, color = Color.Gray)
                                 Text(
-                                    text = "🐕 ${mascota.categoria.name.lowercase().replaceFirstChar { it.uppercase() }}",
+                                    text = "🐕 ${mascota.categoria.name}",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
                                 )
                             }
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(text = "Raza", fontSize = 11.sp, color = Color.Gray)
+                                Text(text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Raza", "Breed"), fontSize = 11.sp, color = Color.Gray)
                                 Text(
-                                    text = "Labrador",
+                                    text = mascota.raza.ifBlank { "Labrador" },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
                                 )
@@ -283,17 +283,17 @@ fun DetailScreen(
 
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(text = "Tamaño", fontSize = 11.sp, color = Color.Gray)
+                                Text(text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Tamaño", "Size"), fontSize = 11.sp, color = Color.Gray)
                                 Text(
-                                    text = "Grande",
+                                    text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Grande", "Large"),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
                                 )
                             }
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(text = "Vacunas", fontSize = 11.sp, color = Color.Gray)
+                                Text(text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Vacunas", "Vaccines"), fontSize = 11.sp, color = Color.Gray)
                                 Text(
-                                    text = "✅ Al día",
+                                    text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("✅ Al día", "✅ Up to date"),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
                                 )
@@ -350,7 +350,7 @@ fun DetailScreen(
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
                                     Text(
-                                        text = "Ubicación reportada",
+                                        text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Ubicación reportada", "Reported location"),
                                         fontSize = 11.sp,
                                         color = Color.Gray,
                                     )
@@ -381,7 +381,7 @@ fun DetailScreen(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Cómo llegar",
+                                    text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Cómo llegar", "Directions"),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,
@@ -433,10 +433,11 @@ fun DetailScreen(
 
                 // COMENTARIOS SECTION
                 Text(
-                    text = "Comentarios (${mascota.comentarios.size})",
+                    text = "${co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Comentarios", "Comments")} (${mascota.comentarios.size})",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
+                        fontSize = 15.sp
                     ),
                 )
 
@@ -451,7 +452,7 @@ fun DetailScreen(
                     TextField(
                         value = uiState.nuevoComentarioTexto,
                         onValueChange = viewModel::onComentarioTextChanged,
-                        placeholder = { Text("Escribe un comentario...") },
+                        placeholder = { Text(co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Escribe un comentario...", "Write a comment...")) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(20.dp),
                         colors = TextFieldDefaults.colors(
@@ -534,20 +535,22 @@ fun DetailScreen(
                     onClick = { showDeleteDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .height(46.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(23.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Eliminar",
                         tint = Color.White,
+                        modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Eliminar Publicación",
+                        text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Eliminar Publicación", "Delete Post"),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
+                        fontSize = 13.sp
                     )
                 }
 
@@ -557,10 +560,15 @@ fun DetailScreen(
                     onClick = onBack,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(24.dp),
+                        .height(46.dp),
+                    shape = RoundedCornerShape(23.dp),
                 ) {
-                    Text("Volver al Feed", color = brandGreen, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Volver al Feed", "Back to Feed"),
+                        color = brandGreen,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
                 }
             }
         }

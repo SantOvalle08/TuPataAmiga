@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import co.edu.uniqundio.tupataamiga.navigation.AppNavigation
+import co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager
 import co.edu.uniqundio.tupataamiga.ui.theme.TuPataAmigaTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -12,10 +13,13 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LocaleManager.initLocale(this)
         enableEdgeToEdge()
         setContent {
-            TuPataAmigaTheme {
-                AppNavigation()
+            LocaleManager.LocalizedContextWrapper {
+                TuPataAmigaTheme {
+                    AppNavigation()
+                }
             }
         }
     }

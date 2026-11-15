@@ -126,7 +126,7 @@ fun ProfileScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Mi Perfil",
+                            text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Mi Perfil", "My Profile"),
                             fontWeight = FontWeight.Bold,
                             color = mainTextColor,
                             fontSize = 22.sp,
@@ -253,9 +253,9 @@ fun ProfileScreen(
                                 },
                             horizontalArrangement = Arrangement.SpaceEvenly,
                         ) {
-                            ProfileStatItem(number = uiState.publicacionesContador.toString(), label = "Publicaciones")
-                            ProfileStatItem(number = uiState.comentariosContador.toString(), label = "Comentarios")
-                            ProfileStatItem(number = uiState.puntosContador.toString(), label = "Puntos")
+                            ProfileStatItem(number = uiState.publicacionesContador.toString(), label = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Publicaciones", "Posts"))
+                            ProfileStatItem(number = uiState.comentariosContador.toString(), label = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Comentarios", "Comments"))
+                            ProfileStatItem(number = uiState.puntosContador.toString(), label = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Puntos", "Points"))
                         }
                     }
                 }
@@ -271,7 +271,7 @@ fun ProfileScreen(
                         ProfileMenuItem(
                             icon = Icons.Default.AdminPanelSettings,
                             iconTint = brandGreen,
-                            title = "Panel de Moderación",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Panel de Moderación", "Moderation Panel"),
                             countBadge = if (uiState.esModerador) "3" else null,
                             onClick = {
                                 if (uiState.esModerador) {
@@ -287,7 +287,7 @@ fun ProfileScreen(
 
                         ProfileMenuItem(
                             icon = Icons.AutoMirrored.Filled.Assignment,
-                            title = "Mis publicaciones",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Mis publicaciones", "My Posts"),
                             countBadge = if (!uiState.esInvitado) uiState.publicacionesContador.toString() else null,
                             onClick = {
                                 if (uiState.esInvitado) {
@@ -302,7 +302,7 @@ fun ProfileScreen(
                         ProfileMenuItem(
                             icon = Icons.Default.Favorite,
                             iconTint = Color(0xFFE53935),
-                            title = "Mis intereses en adopción",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Mis intereses en adopción", "My Adoption Interests"),
                             countBadge = if (!uiState.esInvitado) "3" else null,
                             onClick = {
                                 if (uiState.esInvitado) {
@@ -317,7 +317,7 @@ fun ProfileScreen(
                         ProfileMenuItem(
                             icon = Icons.Default.EmojiEvents,
                             iconTint = Color(0xFFF57F17),
-                            title = "Logros e insignias",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Logros e insignias", "Achievements & Badges"),
                             countBadge = if (!uiState.esInvitado) "4" else null,
                             onClick = {
                                 if (uiState.esInvitado) {
@@ -331,7 +331,7 @@ fun ProfileScreen(
 
                         ProfileMenuItem(
                             icon = Icons.Default.BarChart,
-                            title = "Estadísticas personales",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Estadísticas personales", "Personal Statistics"),
                             onClick = {
                                 if (uiState.esInvitado) {
                                     scope.launch { snackbarHostState.showSnackbar("Inicia sesión para acumular estadísticas") }
@@ -344,7 +344,7 @@ fun ProfileScreen(
 
                         ProfileMenuItem(
                             icon = Icons.Default.Notifications,
-                            title = "Configurar notificaciones",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Configurar notificaciones", "Notification Settings"),
                             onClick = {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     val hasNotifPerm = ContextCompat.checkSelfPermission(
@@ -363,7 +363,7 @@ fun ProfileScreen(
 
                         ProfileMenuItem(
                             icon = Icons.Default.Settings,
-                            title = "Ajustes de la aplicación",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Ajustes de la aplicación", "App Settings"),
                             onClick = {
                                 showSettingsScreen = true
                             },
@@ -372,7 +372,7 @@ fun ProfileScreen(
 
                         ProfileMenuItem(
                             icon = Icons.Default.Person,
-                            title = "Editar datos personales",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Editar datos personales", "Edit Personal Data"),
                             onClick = {
                                 if (uiState.esInvitado) {
                                     scope.launch { snackbarHostState.showSnackbar("Inicia sesión para editar tu perfil") }
@@ -387,7 +387,7 @@ fun ProfileScreen(
                         ProfileMenuItem(
                             icon = Icons.AutoMirrored.Filled.ExitToApp,
                             iconTint = MaterialTheme.colorScheme.error,
-                            title = if (uiState.esInvitado) "Iniciar sesión / Registrarse" else "Cerrar sesión",
+                            title = if (uiState.esInvitado) co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Iniciar sesión / Registrarse", "Sign In / Sign Up") else co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Cerrar sesión", "Log Out"),
                             isDestructive = !uiState.esInvitado,
                             onClick = {
                                 if (uiState.esInvitado) {
@@ -403,7 +403,7 @@ fun ProfileScreen(
                         ProfileMenuItem(
                             icon = Icons.Default.Delete,
                             iconTint = MaterialTheme.colorScheme.error,
-                            title = "Eliminar cuenta",
+                            title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Eliminar cuenta", "Delete Account"),
                             isDestructive = true,
                             onClick = {
                                 if (uiState.esInvitado) {
@@ -821,7 +821,7 @@ private fun MyPublicationsFullScreen(
                                         shape = RoundedCornerShape(16.dp),
                                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                                     ) {
-                                        Text("Editar", fontSize = 11.sp, color = brandGreen)
+                                        Text(co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Editar", "Edit"), fontSize = 11.sp, color = brandGreen)
                                     }
                                 }
                             }
@@ -862,7 +862,7 @@ private fun MyAdoptionInterestsFullScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Mis Intereses en Adopción",
+                            text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Mis Intereses en Adopción", "My Adoption Interests"),
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = Color.Black
@@ -992,7 +992,7 @@ private fun MyAdoptionInterestsFullScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
                                 ) {
-                                    Text("Contactar", fontSize = 12.sp, color = Color.White)
+                                    Text(co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Contactar", "Contact"), fontSize = 12.sp, color = Color.White)
                                 }
                             }
                         }
@@ -1111,12 +1111,8 @@ private fun AppSettingsFullScreen(
     brandGreen: Color,
     fieldBg: Color
 ) {
+    val context = LocalContext.current
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-
-    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
-    val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
-    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
-    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
 
     var isDarkMode by remember { mutableStateOf(co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.isDarkTheme.value) }
     var soundEnabled by remember { mutableStateOf(true) }
@@ -1128,6 +1124,29 @@ private fun AppSettingsFullScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val isEnglish = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.currentLanguage.value == "en"
+
+    val titleText = if (isEnglish) "App Settings" else "Ajustes de la Aplicación"
+    val appearanceSection = if (isEnglish) "APPEARANCE & THEME" else "APARIENCIA Y TEMA"
+    val darkModeTitle = if (isEnglish) "Dark Mode" else "Modo Oscuro"
+    val darkModeDesc = if (isDarkMode) (if (isEnglish) "Enabled (Dark Background · White Text)" else "Activado (Fondo Oscuro · Texto Blanco)") else (if (isEnglish) "Disabled (Light Mode)" else "Desactivado (Modo Claro)")
+    val languageTitle = if (isEnglish) "App Language" else "Idioma de la Aplicación"
+    val soundSection = if (isEnglish) "SOUND & VIBRATION" else "SONIDO Y VIBRACIÓN"
+    val alertSoundTitle = if (isEnglish) "Alert sound effects" else "Efectos de sonido de alertas"
+    val alertSoundDesc = if (soundEnabled) (if (isEnglish) "Sounds enabled" else "Sonidos activados") else (if (isEnglish) "Muted" else "Sonidos silenciados")
+    val vibrationTitle = if (isEnglish) "Notification vibration" else "Vibración de notificaciones"
+    val vibrationDesc = if (vibrationEnabled) (if (isEnglish) "Vibration enabled" else "Vibración activada") else (if (isEnglish) "Vibration disabled" else "Vibración desactivada")
+    val aboutSection = if (isEnglish) "ABOUT & LEGAL" else "ACERCA DE Y LEGAL"
+    val termsTitle = if (isEnglish) "Terms and Conditions of Use" else "Términos y condiciones de uso"
+    val privacyTitle = if (isEnglish) "Privacy Policy" else "Política de privacidad"
+    val aboutTitle = if (isEnglish) "PataAmiga for Android" else "PataAmiga para Android"
+    val aboutSub = if (isEnglish) "Version 1.0.0 · Universidad del Quindío 2026" else "Versión 1.0.0 · Universidad del Quindío 2026"
+
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -1143,7 +1162,7 @@ private fun AppSettingsFullScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Ajustes de la Aplicación",
+                            text = titleText,
                             fontWeight = FontWeight.Bold,
                             fontSize = 19.sp,
                             color = mainTextColor
@@ -1174,7 +1193,7 @@ private fun AppSettingsFullScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Section 1: Apariencia
-            Text(text = "APARIENCIA Y TEMA", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
+            Text(text = appearanceSection, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
@@ -1188,9 +1207,9 @@ private fun AppSettingsFullScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Modo Oscuro", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text(darkModeTitle, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
                             Text(
-                                text = if (isDarkMode) "Activado (Fondo Oscuro · Texto Blanco)" else "Desactivado (Modo Claro)",
+                                text = darkModeDesc,
                                 fontSize = 12.sp,
                                 color = subTextColor
                             )
@@ -1202,7 +1221,7 @@ private fun AppSettingsFullScreen(
                                 co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.isDarkTheme.value = isChecked
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        if (isChecked) "Modo oscuro activado en toda la aplicación" else "Modo claro activado"
+                                        if (isChecked) (if (isEnglish) "Dark mode enabled" else "Modo oscuro activado en toda la aplicación") else (if (isEnglish) "Light mode enabled" else "Modo claro activado")
                                     )
                                 }
                             },
@@ -1216,19 +1235,44 @@ private fun AppSettingsFullScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Idioma de la Aplicación", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
-                            Text("Español (Colombia)", fontSize = 12.sp, color = brandGreen, fontWeight = FontWeight.Medium)
-                        }
-                        Surface(
-                            color = Color(0xFFE8F5E9),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
+                            Text(languageTitle, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
                             Text(
-                                text = "Predeterminado",
-                                fontSize = 11.sp,
+                                text = if (co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.currentLanguage.value == "en") "English" else "Español (Colombia)",
+                                fontSize = 12.sp,
                                 color = brandGreen,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            FilterChip(
+                                selected = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.currentLanguage.value == "es",
+                                onClick = {
+                                    co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.setLanguage(context, "es")
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Idioma cambiado a Español")
+                                    }
+                                },
+                                label = { Text("ES", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = brandGreen,
+                                    selectedLabelColor = Color.White
+                                )
+                            )
+
+                            FilterChip(
+                                selected = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.currentLanguage.value == "en",
+                                onClick = {
+                                    co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.setLanguage(context, "en")
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Language changed to English")
+                                    }
+                                },
+                                label = { Text("EN", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = brandGreen,
+                                    selectedLabelColor = Color.White
+                                )
                             )
                         }
                     }
@@ -1236,7 +1280,7 @@ private fun AppSettingsFullScreen(
             }
 
             // Section 2: Notificaciones y Sonidos
-            Text(text = "SONIDO Y VIBRACIÓN", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
+            Text(text = soundSection, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
@@ -1250,15 +1294,15 @@ private fun AppSettingsFullScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Efectos de sonido de alertas", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
-                            Text(if (soundEnabled) "Sonidos activados" else "Sonidos silenciados", fontSize = 12.sp, color = subTextColor)
+                            Text(alertSoundTitle, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text(alertSoundDesc, fontSize = 12.sp, color = subTextColor)
                         }
                         Switch(
                             checked = soundEnabled,
                             onCheckedChange = {
                                 soundEnabled = it
                                 scope.launch {
-                                    snackbarHostState.showSnackbar(if (it) "Sonidos de alerta activados" else "Sonidos silenciados")
+                                    snackbarHostState.showSnackbar(if (it) (if (isEnglish) "Alert sounds enabled" else "Sonidos de alerta activados") else (if (isEnglish) "Muted" else "Sonidos silenciados"))
                                 }
                             },
                             colors = SwitchDefaults.colors(checkedTrackColor = brandGreen)
@@ -1271,8 +1315,8 @@ private fun AppSettingsFullScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Vibración de notificaciones", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
-                            Text(if (vibrationEnabled) "Vibración activada" else "Vibración desactivada", fontSize = 12.sp, color = subTextColor)
+                            Text(vibrationTitle, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text(vibrationDesc, fontSize = 12.sp, color = subTextColor)
                         }
                         Switch(
                             checked = vibrationEnabled,
@@ -1282,7 +1326,7 @@ private fun AppSettingsFullScreen(
                                     haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                 }
                                 scope.launch {
-                                    snackbarHostState.showSnackbar(if (it) "Vibración activada" else "Vibración desactivada")
+                                    snackbarHostState.showSnackbar(if (it) (if (isEnglish) "Vibration enabled" else "Vibración activada") else (if (isEnglish) "Vibration disabled" else "Vibración desactivada"))
                                 }
                             },
                             colors = SwitchDefaults.colors(checkedTrackColor = brandGreen)
@@ -1292,7 +1336,7 @@ private fun AppSettingsFullScreen(
             }
 
             // Section 3: Información y Legal
-            Text(text = "ACERCA DE Y LEGAL", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
+            Text(text = aboutSection, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = subTextColor, letterSpacing = 0.5.sp)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
@@ -1307,7 +1351,7 @@ private fun AppSettingsFullScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Términos y condiciones de uso", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = mainTextColor)
+                        Text(termsTitle, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = mainTextColor)
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
                     }
                     HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
@@ -1318,7 +1362,7 @@ private fun AppSettingsFullScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Política de privacidad", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = mainTextColor)
+                        Text(privacyTitle, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = mainTextColor)
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
                     }
                     HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
@@ -1330,8 +1374,8 @@ private fun AppSettingsFullScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("PataAmiga para Android", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
-                            Text("Versión 1.0.0 · Universidad del Quindío 2026", fontSize = 12.sp, color = subTextColor)
+                            Text(aboutTitle, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = mainTextColor)
+                            Text(aboutSub, fontSize = 12.sp, color = subTextColor)
                         }
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
                     }

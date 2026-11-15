@@ -123,7 +123,7 @@ fun AlertsScreen(
                     TopAppBar(
                         title = {
                             Text(
-                                text = "Notificaciones",
+                                text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Notificaciones", "Notifications"),
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black,
                                 fontSize = 22.sp
@@ -131,12 +131,12 @@ fun AlertsScreen(
                         },
                         actions = {
                             TextButton(
-                        onClick = {
-                            viewModel.marcarTodasLeidas()
-                        }
-                    ) {
+                                onClick = {
+                                    viewModel.marcarTodasLeidas()
+                                }
+                            ) {
                                 Text(
-                                    text = "Marcar leídas",
+                                    text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Marcar leídas", "Mark as read"),
                                     color = brandGreen,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
@@ -223,10 +223,18 @@ fun AlertsScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
+                                        val tituloTraducido = when (notif.tipo) {
+                                            TipoNotificacion.VERIFICADA -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Publicación verificada", "Verified Post")
+                                            TipoNotificacion.INTERES -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Personas interesadas", "Interested Adopters")
+                                            TipoNotificacion.COMENTARIO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Nuevo comentario", "New Comment")
+                                            TipoNotificacion.LOGRO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("¡Nuevo logro!", "New Achievement!")
+                                            TipoNotificacion.RECHAZADA -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Publicación rechazada", "Post Rejected")
+                                        }
+
                                         Text(
-                                            text = notif.titulo,
+                                            text = tituloTraducido,
                                             fontWeight = FontWeight.Bold,
-                                            fontSize = 15.sp,
+                                            fontSize = 14.sp,
                                             color = Color.Black
                                         )
 

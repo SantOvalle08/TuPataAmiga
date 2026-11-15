@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,9 +36,11 @@ fun RegisterScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val backgroundColor = Color(0xFFF6FBF7)
-    val brandGreen = Color(0xFF0F4C25)
-    val fieldBg = Color(0xFFE8F5E9)
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+    val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
+    val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
 
     fun mostrarSnackbar(mensaje: String) {
         coroutineScope.launch {
@@ -52,10 +55,10 @@ fun RegisterScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Crear cuenta",
+                        text = LocaleManager.tr("Crear cuenta", "Create Account"),
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        fontSize = 22.sp
+                        color = mainTextColor,
+                        fontSize = 20.sp
                     )
                 },
                 navigationIcon = {
@@ -63,7 +66,7 @@ fun RegisterScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.Black
+                            tint = mainTextColor
                         )
                     }
                 },
@@ -84,16 +87,15 @@ fun RegisterScreen(
         ) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Profile Avatar Picker Container
             Box(
                 modifier = Modifier
-                    .size(90.dp)
+                    .size(80.dp)
                     .clip(CircleShape)
                     .border(2.dp, brandGreen, CircleShape)
                     .background(fieldBg)
                     .clickable {
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Seleccionar foto de perfil")
+                            snackbarHostState.showSnackbar(LocaleManager.tr("Foto seleccionada", "Photo selected"))
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -102,29 +104,27 @@ fun RegisterScreen(
                     imageVector = Icons.Default.CameraAlt,
                     contentDescription = "Cargar foto",
                     tint = brandGreen,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Form Fields
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // 1. Nombre Completo
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Nombre completo",
-                        fontSize = 13.sp,
+                        text = LocaleManager.tr("Nombre completo", "Full name"),
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray
+                        color = subTextColor
                     )
                     TextField(
                         value = uiState.nombre,
                         onValueChange = viewModel::onNombreChanged,
-                        placeholder = { Text("Ej: María Gómez") },
+                        placeholder = { Text("María Gómez") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = uiState.nombreError != null,
                         enabled = !uiState.isLoading,
@@ -140,22 +140,21 @@ fun RegisterScreen(
                         singleLine = true
                     )
                     uiState.nombreError?.let {
-                        Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                        Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 11.sp)
                     }
                 }
 
-                // 2. Correo Electrónico
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Correo electrónico",
-                        fontSize = 13.sp,
+                        text = LocaleManager.tr("Correo electrónico", "Email address"),
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray
+                        color = subTextColor
                     )
                     TextField(
                         value = uiState.correo,
                         onValueChange = viewModel::onCorreoChanged,
-                        placeholder = { Text("Ej: maria@gmail.com") },
+                        placeholder = { Text("ejemplo@uniqundio.edu.co") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = uiState.correoError != null,
                         enabled = !uiState.isLoading,
@@ -171,22 +170,20 @@ fun RegisterScreen(
                         singleLine = true
                     )
                     uiState.correoError?.let {
-                        Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                        Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 11.sp)
                     }
                 }
 
-                // 3. Contraseña
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Contraseña",
-                        fontSize = 13.sp,
+                        text = LocaleManager.tr("Contraseña", "Password"),
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray
+                        color = subTextColor
                     )
                     TextField(
                         value = uiState.clave,
                         onValueChange = viewModel::onClaveChanged,
-                        placeholder = { Text("••••••••") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = uiState.claveError != null,
                         enabled = !uiState.isLoading,
@@ -203,63 +200,30 @@ fun RegisterScreen(
                         singleLine = true
                     )
                     uiState.claveError?.let {
-                        Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                        Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 11.sp)
                     }
                 }
 
-                // 4. Confirmar Contraseña
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Confirmar contraseña",
-                        fontSize = 13.sp,
+                        text = LocaleManager.tr("Dirección de residencia", "Residential address"),
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray
-                    )
-                    TextField(
-                        value = uiState.confirmarClave,
-                        onValueChange = viewModel::onConfirmarClaveChanged,
-                        placeholder = { Text("••••••••") },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = uiState.confirmarClaveError != null,
-                        enabled = !uiState.isLoading,
-                        visualTransformation = PasswordVisualTransformation(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = fieldBg,
-                            unfocusedContainerColor = fieldBg,
-                            disabledContainerColor = fieldBg,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            errorIndicatorColor = MaterialTheme.colorScheme.error
-                        ),
-                        singleLine = true
-                    )
-                    uiState.confirmarClaveError?.let {
-                        Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
-                    }
-                }
-
-                // 5. Dirección con Ícono de Mapa
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = "Dirección",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray
+                        color = subTextColor
                     )
                     TextField(
                         value = uiState.direccion,
                         onValueChange = viewModel::onDireccionChanged,
                         placeholder = { Text("Armenia, Quindío") },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !uiState.isLoading,
                         trailingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Place,
-                                contentDescription = "Ubicación",
+                                contentDescription = "Mapa",
                                 tint = brandGreen
                             )
                         },
+                        enabled = !uiState.isLoading,
                         shape = RoundedCornerShape(12.dp),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = fieldBg,
@@ -270,68 +234,46 @@ fun RegisterScreen(
                         ),
                         singleLine = true
                     )
-                    Text(
-                        text = "📍 Seleccionada desde el mapa",
-                        fontSize = 12.sp,
-                        color = brandGreen,
-                        fontWeight = FontWeight.Medium
-                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Submit Button
             Button(
                 onClick = {
                     viewModel.register(
-                        onSuccess = onRegisterSuccess,
-                        onError = { error -> mostrarSnackbar(error) }
+                        onSuccess = {
+                            mostrarSnackbar(LocaleManager.tr("¡Registro exitoso!", "Registration successful!"))
+                            onRegisterSuccess()
+                        },
+                        onError = { msg ->
+                            mostrarSnackbar(msg)
+                        }
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(46.dp),
                 enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = brandGreen),
-                shape = RoundedCornerShape(25.dp)
+                shape = RoundedCornerShape(23.dp)
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(20.dp),
                         color = Color.White
                     )
                 } else {
                     Text(
-                        text = "CREAR CUENTA",
+                        text = LocaleManager.tr("REGISTRARME", "REGISTER"),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
+                        fontSize = 13.sp,
                         color = Color.White
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 24.dp)
-            ) {
-                Text(text = "¿Ya tienes cuenta? ", color = Color.Gray, fontSize = 14.sp)
-                TextButton(
-                    onClick = onBack,
-                    enabled = !uiState.isLoading,
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Text(
-                        text = "Inicia sesión",
-                        color = brandGreen,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
