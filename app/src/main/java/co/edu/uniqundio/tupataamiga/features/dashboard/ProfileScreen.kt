@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -189,12 +190,21 @@ fun ProfileScreen(
                                     .background(brandGreen),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(36.dp),
-                                )
+                                if (!uiState.usuario?.fotoUrl.isNullOrBlank()) {
+                                    AsyncImage(
+                                        model = uiState.usuario?.fotoUrl,
+                                        contentDescription = "Foto de perfil",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp),
+                                    )
+                                }
                             }
 
                             Spacer(modifier = Modifier.width(16.dp))

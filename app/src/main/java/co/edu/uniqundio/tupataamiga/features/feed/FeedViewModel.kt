@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
+import co.edu.uniqundio.tupataamiga.domain.model.Usuario
+import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import co.edu.uniqundio.tupataamiga.domain.usecase.mascota.ObserveMascotasUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,8 +16,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
-    observeMascotasUseCase: ObserveMascotasUseCase
+    observeMascotasUseCase: ObserveMascotasUseCase,
+    userRepository: UserRepository,
 ) : ViewModel() {
+
+    val currentUser: StateFlow<Usuario?> = userRepository.currentUser
 
     val mascotas: StateFlow<List<Mascota>> = observeMascotasUseCase()
         .map { list -> list.filter { it.estado == EstadoPublicacion.APROBADO } }

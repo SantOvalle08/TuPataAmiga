@@ -53,6 +53,12 @@ fun DashboardNavigation(
                         popUpTo(DashboardRoutes.Feed.route)
                     }
                 },
+                onProfileClick = {
+                    onDestinationChange(DashboardDestination.PERFIL)
+                    navController.navigate(DashboardRoutes.Profile.route) {
+                        popUpTo(DashboardRoutes.Feed.route)
+                    }
+                },
             )
         }
         composable(DashboardRoutes.Create.route) {
