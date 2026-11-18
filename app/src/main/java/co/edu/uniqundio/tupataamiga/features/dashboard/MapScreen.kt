@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.location.Geocoder
 import android.preference.PreferenceManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -37,6 +38,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import co.edu.uniqundio.tupataamiga.ui.theme.abrirComoLlegar
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
+import co.edu.uniqundio.tupataamiga.domain.model.Categoria
+import coil.compose.AsyncImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -48,11 +53,20 @@ data class MapPetMarker(
     val nombre: String,
     val categoria: String,
     val lugar: String,
+    val imagenUrl: String,
     val lat: Double,
     val lng: Double,
     val distancia: String,
     val markerColor: Color
 )
+
+private fun colorForCategory(categoria: Categoria): Color = when (categoria) {
+    Categoria.ADOPCION -> Color(0xFF2E7D32)
+    Categoria.PERDIDO -> Color(0xFFC62828)
+    Categoria.ENCONTRADO -> Color(0xFF1565C0)
+    Categoria.HOGAR_TEMPORAL -> Color(0xFFF57F17)
+    Categoria.JORNADA_VETERINARIA -> Color(0xFF7B1FA2)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,18 +83,39 @@ fun MapScreen(
     val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
 
     var selectedFilter by remember { mutableStateOf("Todos") }
+    var geocodedCoordinates by remember { mutableStateOf<Map<String, GeoPoint>>(emptyMap()) }
 
-    val petMarkers = remember(mascotas) {
-        mascotas.mapIndexed { index, mascota ->
+    LaunchedEffect(mascotas) {
+        val coordinates = mascotas.mapNotNull { mascota ->
+            if (mascota.latitud != null && mascota.longitud != null) {
+                mascota.id to GeoPoint(mascota.latitud, mascota.longitud)
+            } else {
+                val point = withContext(Dispatchers.IO) {
+                    runCatching {
+                        Geocoder(context).getFromLocationName(mascota.ubicacion, 1)
+                            ?.firstOrNull()
+                            ?.let { GeoPoint(it.latitude, it.longitude) }
+                    }.getOrNull()
+                }
+                point?.let { mascota.id to it }
+            }
+        }.toMap()
+        geocodedCoordinates = coordinates
+    }
+
+    val petMarkers = remember(mascotas, geocodedCoordinates) {
+        mascotas.mapNotNull { mascota ->
+            val point = geocodedCoordinates[mascota.id] ?: return@mapNotNull null
             MapPetMarker(
                 id = mascota.id,
                 nombre = mascota.nombre,
                 categoria = mascota.categoria.name,
                 lugar = mascota.ubicacion,
-                lat = 4.5389 + (index % 5) * 0.0015,
-                lng = -75.6781 - (index % 5) * 0.0012,
+                imagenUrl = mascota.imagenUrl,
+                lat = point.latitude,
+                lng = point.longitude,
                 distancia = "",
-                markerColor = Color(0xFF2E7D32),
+                markerColor = colorForCategory(mascota.categoria),
             )
         }
     }
@@ -151,7 +186,7 @@ fun MapScreen(
 
                     filteredMarkers.forEach { pet ->
                         val isSelected = selectedMarker?.id == pet.id
-                        val pinColor = if (isSelected) brandGreen else pet.markerColor
+                        val pinColor = pet.markerColor
 
                         val marker = Marker(mapView).apply {
                             position = GeoPoint(pet.lat, pet.lng)
@@ -185,7 +220,8 @@ fun MapScreen(
                     "ADOPCION" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Adopción", "Adoption"),
                     "PERDIDO" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Perdidos", "Lost"),
                     "ENCONTRADO" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Encontrados", "Found"),
-                    "HOGAR_TEMPORAL" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Hogar Temporal", "Foster Home")
+                    "HOGAR_TEMPORAL" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Hogar Temporal", "Foster Home"),
+                    "JORNADA_VETERINARIA" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Jornada de Vacunación", "Vaccination Drive"),
                 )
 
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -263,12 +299,21 @@ fun MapScreen(
                                 .background(fieldBg),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Pets,
-                                contentDescription = null,
-                                tint = brandGreen,
-                                modifier = Modifier.size(32.dp)
-                            )
+                            if (marker.imagenUrl.isBlank()) {
+                                Icon(
+                                    imageVector = Icons.Default.Pets,
+                                    contentDescription = null,
+                                    tint = brandGreen,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            } else {
+                                AsyncImage(
+                                    model = marker.imagenUrl,
+                                    contentDescription = marker.nombre,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.width(14.dp))

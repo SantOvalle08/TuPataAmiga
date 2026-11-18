@@ -1,5 +1,7 @@
 package co.edu.uniqundio.tupataamiga.features.feed
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,6 +35,7 @@ import co.edu.uniqundio.tupataamiga.domain.model.Categoria
 import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,11 +48,18 @@ fun FeedScreen(
 ) {
     val mascotas by viewModel.mascotas.collectAsState()
     val currentUser by viewModel.currentUser.collectAsState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     var searchQuery by remember { mutableStateOf("") }
     var selectedEstadoFilter by remember { mutableStateOf<EstadoPublicacion?>(null) }
 
-    val brandGreen = Color(0xFF0F4C25)
-    val fieldBg = Color(0xFFE8F5E9)
+    val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
+    val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
+    val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
+    val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
+    val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
 
     val filteredMascotas = remember(mascotas, searchQuery, selectedEstadoFilter) {
         mascotas.filter { mascota: Mascota ->
@@ -65,13 +76,14 @@ fun FeedScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = "PataAmiga",
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = mainTextColor,
                         fontSize = 22.sp
                     )
                 },
@@ -121,7 +133,7 @@ fun FeedScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFF6FBF7)
+                    containerColor = backgroundColor
                 )
             )
         },
@@ -140,7 +152,7 @@ fun FeedScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFFF6FBF7))
+                .background(backgroundColor)
         ) {
             // Buscador redondo
             OutlinedTextField(
@@ -259,15 +271,15 @@ fun FeedScreen(
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(filteredMascotas, key = { it.id }) { mascota ->
-                        var isLiked by remember { mutableStateOf(false) }
-                        var likesCount by remember { mutableStateOf(24) }
+                        val isLiked = currentUser?.id in mascota.interesadosIds
+                        val likesCount = mascota.interesadosIds.size
 
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { onMascotaClick(mascota.id) },
                             shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = cardBg),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(modifier = Modifier.padding(14.dp)) {
@@ -409,13 +421,7 @@ fun FeedScreen(
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.clickable {
-                                            if (isLiked) {
-                                                isLiked = false
-                                                likesCount--
-                                            } else {
-                                                isLiked = true
-                                                likesCount++
-                                            }
+                                            viewModel.toggleInteres(mascota)
                                         }
                                     ) {
                                         Icon(
@@ -437,7 +443,37 @@ fun FeedScreen(
                                     Surface(
                                         color = fieldBg,
                                         shape = RoundedCornerShape(16.dp),
-                                        modifier = Modifier.clickable { onMascotaClick(mascota.id) }
+                                        modifier = Modifier.clickable {
+                                            val requiereContacto = mascota.categoria == Categoria.ADOPCION ||
+                                                    mascota.categoria == Categoria.PERDIDO ||
+                                                    mascota.categoria == Categoria.ENCONTRADO
+                                            if (requiereContacto) {
+                                                scope.launch {
+                                                    val correo = runCatching {
+                                                        viewModel.obtenerCorreoPropietario(mascota)
+                                                    }.getOrNull()
+                                                    if (!correo.isNullOrBlank() && correo.contains("@")) {
+                                                        context.startActivity(
+                                                            Intent(
+                                                                Intent.ACTION_SENDTO,
+                                                                Uri.parse("mailto:$correo"),
+                                                            ).apply {
+                                                                putExtra(
+                                                                    Intent.EXTRA_SUBJECT,
+                                                                    "Contacto sobre la publicación: ${mascota.nombre}",
+                                                                )
+                                                            },
+                                                        )
+                                                    } else {
+                                                        snackbarHostState.showSnackbar(
+                                                            "No hay un correo de contacto disponible para esta publicación",
+                                                        )
+                                                    }
+                                                }
+                                            } else {
+                                                onMascotaClick(mascota.id)
+                                            }
+                                        }
                                     ) {
                                         Text(
                                             text = textoBoton,

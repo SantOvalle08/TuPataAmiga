@@ -20,6 +20,7 @@ fun BottomNavigationBar(
 ) {
     val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
     val cardBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor
+    val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
 
     NavigationBar(
         containerColor = cardBg
@@ -59,8 +60,8 @@ fun BottomNavigationBar(
                     selectedIconColor = brandGreen,
                     selectedTextColor = brandGreen,
                     indicatorColor = brandGreen.copy(alpha = 0.15f),
-                    unselectedIconColor = Color.DarkGray,
-                    unselectedTextColor = Color.Gray
+                    unselectedIconColor = subTextColor,
+                    unselectedTextColor = subTextColor
                 )
             )
         }

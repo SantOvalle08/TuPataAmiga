@@ -342,7 +342,26 @@ class MascotaRepositoryImpl @Inject constructor(
         mascotasFlow.update { current ->
             val updated = current.map { m ->
                 if (m.id == mascotaId) {
-                    m.copy(interesAdopcionCount = m.interesAdopcionCount + 1)
+                    m.copy(
+                        interesadosIds = (m.interesadosIds + "local-user").distinct(),
+                        interesAdopcionCount = (m.interesadosIds + "local-user").distinct().size,
+                    )
+                } else m
+            }
+            saveMascotasToDisk(updated)
+            updated
+        }
+    }
+
+    override suspend fun quitarInteres(mascotaId: String) {
+        mascotasFlow.update { current ->
+            val updated = current.map { m ->
+                if (m.id == mascotaId) {
+                    val interesados = m.interesadosIds.filterNot { it == "local-user" }
+                    m.copy(
+                        interesadosIds = interesados,
+                        interesAdopcionCount = interesados.size,
+                    )
                 } else m
             }
             saveMascotasToDisk(updated)

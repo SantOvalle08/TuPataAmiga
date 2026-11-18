@@ -203,10 +203,9 @@ class ProfileViewModel @Inject constructor(
         userRepository.logout()
     }
 
-    fun deleteAccount(onSuccess: () -> Unit) {
+    fun deleteAccount(onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            userRepository.deleteCurrentAccount()
-            onSuccess()
+            onResult(userRepository.deleteCurrentAccount())
         }
     }
 }

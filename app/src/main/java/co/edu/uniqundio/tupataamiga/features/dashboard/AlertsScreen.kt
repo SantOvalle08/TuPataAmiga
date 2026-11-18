@@ -140,7 +140,7 @@ fun AlertsScreen(
                             Text(
                                 text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Notificaciones", "Notifications"),
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black,
+                                color = mainTextColor,
                                 fontSize = 22.sp
                             )
                         },
@@ -159,17 +159,17 @@ fun AlertsScreen(
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color(0xFFF6FBF7)
+                            containerColor = backgroundColor
                         )
                     )
                 },
-                containerColor = Color(0xFFF6FBF7)
+                containerColor = backgroundColor
             ) { padding ->
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .background(Color(0xFFF6FBF7))
+                        .background(backgroundColor)
                 ) {
                     items(notificaciones, key = { it.id }) { notif ->
                         val (icon, iconBg, iconFg) = when (notif.tipo) {
@@ -251,7 +251,7 @@ fun AlertsScreen(
                                             text = tituloTraducido,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 14.sp,
-                                            color = Color.Black
+                                            color = mainTextColor
                                         )
 
                                         if (!notif.leido) {
@@ -269,7 +269,7 @@ fun AlertsScreen(
                                     Text(
                                         text = notif.cuerpo,
                                         fontSize = 13.sp,
-                                        color = Color.DarkGray,
+                                        color = subTextColor,
                                         lineHeight = 18.sp
                                     )
 
@@ -278,7 +278,7 @@ fun AlertsScreen(
                                     Text(
                                         text = notif.tiempo,
                                         fontSize = 11.sp,
-                                        color = Color.Gray
+                                        color = subTextColor
                                     )
                                 }
                             }
@@ -328,7 +328,7 @@ private fun VerifiedPostsFullScreen(
                             text = "Publicaciones Verificadas",
                             fontWeight = FontWeight.Bold,
                             fontSize = 19.sp,
-                            color = Color.Black
+                            color = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
                         )
                     }
                 },
@@ -337,20 +337,20 @@ private fun VerifiedPostsFullScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.Black
+                            tint = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF6FBF7))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor)
             )
         },
-        containerColor = Color(0xFFF6FBF7)
+        containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFFF6FBF7))
+                .background(co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor)
                 .padding(horizontal = 16.dp)
         ) {
             Card(
@@ -379,7 +379,7 @@ private fun VerifiedPostsFullScreen(
                         Text(
                             text = "Estas publicaciones han sido revisadas y verificadas por el equipo de moderadores de PataAmiga.",
                             fontSize = 12.sp,
-                            color = Color.DarkGray,
+                            color = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor,
                             lineHeight = 16.sp
                         )
                     }
@@ -396,7 +396,7 @@ private fun VerifiedPostsFullScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(
@@ -463,7 +463,7 @@ private fun VerifiedPostsFullScreen(
                                     text = post.nombre,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
-                                    color = Color.Black
+                                    color = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
                                 )
 
                                 Spacer(modifier = Modifier.height(2.dp))
@@ -532,10 +532,10 @@ private fun InterestedPeopleFullScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF6FBF7))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor)
             )
         },
-        containerColor = Color(0xFFF6FBF7)
+        containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
     ) { padding ->
         Column(
             modifier = Modifier
@@ -580,7 +580,7 @@ private fun InterestedPeopleFullScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(
@@ -671,14 +671,14 @@ private fun CommentsThreadFullScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF6FBF7))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor)
             )
         },
         bottomBar = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor)
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -713,7 +713,7 @@ private fun CommentsThreadFullScreen(
                 }
             }
         },
-        containerColor = Color(0xFFF6FBF7)
+        containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -734,7 +734,7 @@ private fun CommentsThreadFullScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.cardColor),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
@@ -773,10 +773,10 @@ private fun AchievementDetailFullScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF6FBF7))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor)
             )
         },
-        containerColor = Color(0xFFF6FBF7)
+        containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
     ) { padding ->
         Column(
             modifier = Modifier
@@ -808,7 +808,7 @@ private fun AchievementDetailFullScreen(
                 notification?.titulo ?: "Logro desbloqueado",
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
-                color = Color.Black,
+                color = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -817,7 +817,7 @@ private fun AchievementDetailFullScreen(
                 text = notification?.cuerpo
                     ?: "Has desbloqueado un nuevo logro por tu actividad en la comunidad.",
                 fontSize = 14.sp,
-                color = Color.DarkGray,
+                color = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor,
                 lineHeight = 22.sp,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
@@ -853,10 +853,10 @@ private fun RejectionDetailFullScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF6FBF7))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor)
             )
         },
-        containerColor = Color(0xFFF6FBF7)
+        containerColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
     ) { padding ->
         Column(
             modifier = Modifier
@@ -894,7 +894,7 @@ private fun RejectionDetailFullScreen(
                         notification?.cuerpo
                             ?: "El moderador no aprobó esta publicación. Revisa los datos e inténtalo nuevamente.",
                         fontSize = 13.sp,
-                        color = Color.DarkGray,
+                        color = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor,
                         lineHeight = 18.sp
                     )
                 }

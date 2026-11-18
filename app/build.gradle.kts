@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -22,27 +24,31 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(localPropertiesFile.inputStream())
+    }
+
     signingConfigs {
+        // Llave propia para firmar la versión release
         create("release") {
-            val relKey = file("release.keystore")
-            if (relKey.exists()) {
-                storeFile = relKey
-                storePassword = "tupataamigakey"
-                keyAlias = "tupataamigakey"
-                keyPassword = "tupataamigakey"
-            } else {
-                storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
-                storePassword = "android"
-                keyAlias = "androiddebugkey"
-                keyPassword = "android"
-            }
+            // Si local.properties no tiene la llave, storeFile queda nulo y debug sigue compilando
+            storeFile = localProperties.getProperty("RELEASE_STORE_FILE")?.takeIf { it.isNotBlank() }?.let { path -> file(path) }
+            storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD", "")
+            keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS", "")
+            keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD", "")
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("release")
+
+            // R8 elimina el código y los recursos que la app no usa
+            optimization {
+                enable = true
+            }
         }
     }
     compileOptions {

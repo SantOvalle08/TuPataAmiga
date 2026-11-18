@@ -31,13 +31,6 @@ class CreateViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CreateUiState())
     val uiState: StateFlow<CreateUiState> = _uiState.asStateFlow()
 
-    private val randomImages = listOf(
-        "https://images.unsplash.com/photo-1543466835-00a7907e9de1",
-        "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
-        "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e",
-        "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2",
-    )
-
     fun onNombreChanged(nombre: String) {
         _uiState.update { it.copy(nombre = nombre) }
     }
@@ -86,6 +79,16 @@ class CreateViewModel @Inject constructor(
         }
     }
 
+    fun onUbicacionSeleccionada(ubicacion: String, latitud: Double, longitud: Double) {
+        _uiState.update {
+            it.copy(
+                ubicacion = ubicacion.trim(),
+                latitud = latitud,
+                longitud = longitud,
+            )
+        }
+    }
+
     fun onNecesidadAdicionalChanged(necesidad: String) {
         _uiState.update { it.copy(necesidadAdicional = necesidad) }
     }
@@ -95,6 +98,10 @@ class CreateViewModel @Inject constructor(
             val combinadas = (state.fotosSeleccionadas + nuevasUris).distinct().take(5)
             state.copy(fotosSeleccionadas = combinadas)
         }
+    }
+
+    fun onFotoPrincipalSeleccionada(uri: Uri) {
+        _uiState.update { it.copy(fotosSeleccionadas = listOf(uri)) }
     }
 
     fun onFotoEliminada(uri: Uri) {
@@ -140,11 +147,7 @@ class CreateViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = true) }
 
                 val primeraFoto = state.fotosSeleccionadas.firstOrNull()
-                val imagenFinal = if (primeraFoto != null) {
-                    persistirImagenLocal(primeraFoto)
-                } else {
-                    randomImages.random()
-                }
+                val imagenFinal = primeraFoto?.let(::persistirImagenLocal).orEmpty()
 
                 val mascota = Mascota(
                     id = UUID.randomUUID().toString(),
@@ -161,6 +164,8 @@ class CreateViewModel @Inject constructor(
                     descripcion = state.descripcion,
                     imagenUrl = imagenFinal,
                     ubicacion = state.ubicacion,
+                    latitud = state.latitud,
+                    longitud = state.longitud,
                     usuarioId = userRepository.currentUser.value?.id.orEmpty(),
                     nombrePublicante = userRepository.currentUser.value?.nombre ?: "Usuario PataAmiga",
                     fechaCreacion = "Hace un momento",
@@ -185,6 +190,8 @@ data class CreateUiState(
     val tamano: TamanoMascota = TamanoMascota.MEDIANO,
     val tieneVacunas: Boolean = true,
     val ubicacion: String = "El Bosque, Armenia",
+    val latitud: Double? = null,
+    val longitud: Double? = null,
     val necesidadAdicional: String = "",
     val categoria: Categoria = Categoria.ADOPCION,
     val tipoAnimal: TipoAnimal = TipoAnimal.PERRO,

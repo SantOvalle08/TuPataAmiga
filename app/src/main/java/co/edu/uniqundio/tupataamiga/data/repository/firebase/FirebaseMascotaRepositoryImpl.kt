@@ -6,6 +6,7 @@ import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.FirebaseAuth
+import android.util.Log
 import co.edu.uniqundio.tupataamiga.data.remote.cloudinary.CloudinaryService
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +21,10 @@ class FirebaseMascotaRepositoryImpl @Inject constructor(
     private val cloudinaryService: CloudinaryService,
 ) : MascotaRepository {
 
+    private companion object {
+        const val TAG = "FirebaseMascotaRepo"
+    }
+
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
@@ -32,9 +37,12 @@ class FirebaseMascotaRepositoryImpl @Inject constructor(
                 }
                 if (snapshot != null) {
                     val list = snapshot.documents.mapNotNull { doc ->
-                        runCatching {
+                        try {
                             doc.toObject(Mascota::class.java)?.copy(id = doc.id)
-                        }.getOrNull()
+                        } catch (exception: Exception) {
+                            Log.e(TAG, "No se pudo mapear la publicación ${doc.id}", exception)
+                            null
+                        }
                     }
                     trySend(list)
                 }
@@ -120,11 +128,32 @@ class FirebaseMascotaRepositoryImpl @Inject constructor(
             val snapshot = transaction.get(reference)
             val interesados = snapshot.get("interesadosIds") as? List<*> ?: emptyList<Any>()
             if (userId !in interesados) {
+                val nuevosInteresados = interesados + userId
                 transaction.update(
                     reference,
                     mapOf(
                         "interesadosIds" to com.google.firebase.firestore.FieldValue.arrayUnion(userId),
-                        "interesAdopcionCount" to com.google.firebase.firestore.FieldValue.increment(1),
+                        "interesAdopcionCount" to nuevosInteresados.size,
+                    ),
+                )
+            }
+            null
+        }.await()
+    }
+
+    override suspend fun quitarInteres(mascotaId: String) {
+        val userId = auth.currentUser?.uid ?: return
+        val reference = firestore.collection("mascotas").document(mascotaId)
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(reference)
+            val interesados = snapshot.get("interesadosIds") as? List<*> ?: emptyList<Any>()
+            if (userId in interesados) {
+                val nuevosInteresados = interesados.filterNot { it == userId }
+                transaction.update(
+                    reference,
+                    mapOf(
+                        "interesadosIds" to nuevosInteresados,
+                        "interesAdopcionCount" to nuevosInteresados.size,
                     ),
                 )
             }

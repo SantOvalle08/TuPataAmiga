@@ -6,18 +6,21 @@ import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 import co.edu.uniqundio.tupataamiga.domain.model.Usuario
 import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
+import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
 import co.edu.uniqundio.tupataamiga.domain.usecase.mascota.ObserveMascotasUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
     observeMascotasUseCase: ObserveMascotasUseCase,
-    userRepository: UserRepository,
+    private val userRepository: UserRepository,
+    private val mascotaRepository: MascotaRepository,
 ) : ViewModel() {
 
     val currentUser: StateFlow<Usuario?> = userRepository.currentUser
@@ -29,4 +32,20 @@ class FeedViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun toggleInteres(mascota: Mascota) {
+        viewModelScope.launch {
+            val userId = currentUser.value?.id ?: return@launch
+            if (userId in mascota.interesadosIds) {
+                mascotaRepository.quitarInteres(mascota.id)
+            } else {
+                mascotaRepository.incrementarInteres(mascota.id)
+            }
+
+        }
+    }
+
+    suspend fun obtenerCorreoPropietario(mascota: Mascota): String? {
+        return userRepository.getUserById(mascota.usuarioId)?.correo
+    }
 }

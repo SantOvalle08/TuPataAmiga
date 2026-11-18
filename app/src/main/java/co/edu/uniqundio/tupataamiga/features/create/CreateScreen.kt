@@ -2,7 +2,9 @@ package co.edu.uniqundio.tupataamiga.features.create
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.net.Uri
+import android.view.MotionEvent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -35,8 +37,17 @@ import co.edu.uniqundio.tupataamiga.domain.model.Categoria
 import co.edu.uniqundio.tupataamiga.domain.model.TamanoMascota
 import co.edu.uniqundio.tupataamiga.domain.model.TipoAnimal
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import androidx.compose.ui.viewinterop.AndroidView
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,12 +65,14 @@ fun CreateScreen(
     val fieldBg = Color(0xFFE8F5E9)
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(value = null) }
+    var mostrarSelectorUbicacion by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
     ) { uri: Uri? ->
         if (uri != null) {
             selectedImageUri = uri
+            viewModel.onFotoPrincipalSeleccionada(uri)
             scope.launch {
                 snackbarHostState.showSnackbar("Imagen seleccionada de la galería")
             }
@@ -197,10 +210,17 @@ fun CreateScreen(
                     fontWeight = FontWeight.Medium,
                     color = Color.DarkGray,
                 )
+                val titleHint = when (uiState.categoria) {
+                    Categoria.ADOPCION -> "Ej. Luna busca una familia"
+                    Categoria.PERDIDO -> "Ej. Max se perdió en el centro"
+                    Categoria.ENCONTRADO -> "Ej. Encontré un perro en el parque"
+                    Categoria.HOGAR_TEMPORAL -> "Ej. Se necesita hogar temporal"
+                    Categoria.JORNADA_VETERINARIA -> "Ej. Jornada de vacunación gratuita"
+                }
                 TextField(
                     value = uiState.nombre,
                     onValueChange = viewModel::onNombreChanged,
-                    placeholder = { Text("Rex busca hogar amoroso") },
+                    placeholder = { Text(titleHint) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
@@ -274,7 +294,11 @@ fun CreateScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Pequeño", "Mediano", "Grande").forEach { tam ->
                         FilterChip(
-                            selected = uiState.tamano.name.lowercase().replaceFirstChar { it.uppercase() } == tam,
+                            selected = when (tam) {
+                                "Pequeño" -> uiState.tamano == TamanoMascota.PEQUENO
+                                "Grande" -> uiState.tamano == TamanoMascota.GRANDE
+                                else -> uiState.tamano == TamanoMascota.MEDIANO
+                            },
                             onClick = {
                                 val tamEnum = when (tam) {
                                     "Pequeño" -> TamanoMascota.PEQUENO
@@ -449,14 +473,14 @@ fun CreateScreen(
                             modifier = Modifier
                                 .size(70.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(brandGreen),
+                                .background(fieldBg),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Pets,
+                            AsyncImage(
+                                model = selectedImageUri,
                                 contentDescription = "Foto elegida",
-                                tint = Color.White,
-                                modifier = Modifier.size(32.dp),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize(),
                             )
                         }
                     }
@@ -498,27 +522,36 @@ fun CreateScreen(
                                 fontSize = 14.sp,
                             )
                         }
-                        Text(
-                            text = "Obtener GPS",
-                            color = brandGreen,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            modifier = Modifier.clickable {
-                                val hasLocPerm = ContextCompat.checkSelfPermission(
-                                    context,
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                ) == PackageManager.PERMISSION_GRANTED
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "Elegir en mapa",
+                                color = brandGreen,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                modifier = Modifier.clickable { mostrarSelectorUbicacion = true },
+                            )
+                            Text(
+                                text = "Obtener GPS",
+                                color = brandGreen,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                modifier = Modifier.clickable {
+                                    val hasLocPerm = ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.ACCESS_FINE_LOCATION,
+                                    ) == PackageManager.PERMISSION_GRANTED
 
-                                if (hasLocPerm) {
-                                    viewModel.onUbicacionChanged("Armenia, Quindío (GPS)")
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Ubicación GPS obtenida exitosamente")
+                                    if (hasLocPerm) {
+                                        viewModel.onUbicacionChanged("Armenia, Quindío (GPS)")
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Ubicación GPS obtenida exitosamente")
+                                        }
+                                    } else {
+                                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                                     }
-                                } else {
-                                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                                }
-                            },
-                        )
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -526,4 +559,94 @@ fun CreateScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
+
+    if (mostrarSelectorUbicacion) {
+        LocationPickerDialog(
+            initialAddress = uiState.ubicacion,
+            onDismiss = { mostrarSelectorUbicacion = false },
+            onLocationSelected = { address, latitude, longitude ->
+                viewModel.onUbicacionSeleccionada(address, latitude, longitude)
+                mostrarSelectorUbicacion = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun LocationPickerDialog(
+    initialAddress: String,
+    onDismiss: () -> Unit,
+    onLocationSelected: (String, Double, Double) -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var address by remember { mutableStateOf(initialAddress) }
+    var point by remember { mutableStateOf(GeoPoint(4.5375, -75.6780)) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Selecciona la ubicación de la publicación") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(address, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    factory = { ctx ->
+                        Configuration.getInstance().load(
+                            ctx,
+                            android.preference.PreferenceManager.getDefaultSharedPreferences(ctx),
+                        )
+                        MapView(ctx).apply {
+                            setTileSource(TileSourceFactory.MAPNIK)
+                            setMultiTouchControls(true)
+                            controller.setZoom(14.5)
+                            controller.setCenter(point)
+                            val marker = Marker(this).apply {
+                                position = point
+                                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                            }
+                            overlays.add(marker)
+                            setOnTouchListener { view, event ->
+                                if (event.action == MotionEvent.ACTION_UP) {
+                                    val selectedPoint = (view as MapView).projection
+                                        .fromPixels(event.x.toInt(), event.y.toInt())
+                                    point = GeoPoint(selectedPoint.latitude, selectedPoint.longitude)
+                                    marker.position = point
+                                    (view as MapView).invalidate()
+                                    scope.launch {
+                                        val resolvedAddress = withContext(Dispatchers.IO) {
+                                            runCatching {
+                                                Geocoder(context).getFromLocation(
+                                                    selectedPoint.latitude,
+                                                    selectedPoint.longitude,
+                                                    1,
+                                                )?.firstOrNull()?.getAddressLine(0)
+                                            }.getOrNull()
+                                        }
+                                        address = resolvedAddress
+                                            ?: "${selectedPoint.latitude}, ${selectedPoint.longitude}"
+                                    }
+                                }
+                                false
+                            }
+                        }
+                    },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onLocationSelected(address, point.latitude, point.longitude)
+            }) {
+                Text("Usar ubicación")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        },
+    )
 }
