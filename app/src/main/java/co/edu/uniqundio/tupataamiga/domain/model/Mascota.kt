@@ -1,5 +1,8 @@
 package co.edu.uniqundio.tupataamiga.domain.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class Mascota(
     val id: String,
     val nombre: String,

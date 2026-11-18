@@ -1,5 +1,8 @@
 package co.edu.uniqundio.tupataamiga.domain.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class Comentario(
     val id: String,
     val usuarioId: String,
