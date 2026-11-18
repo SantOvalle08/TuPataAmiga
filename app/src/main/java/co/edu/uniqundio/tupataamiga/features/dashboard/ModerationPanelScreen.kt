@@ -42,6 +42,7 @@ fun ModerationPanelScreen(
 
     val pendingPosts by viewModel.pendingPosts.collectAsState()
     val approvedPosts by viewModel.approvedPosts.collectAsState()
+    val aiSummaries by viewModel.aiSummaries.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -180,6 +181,9 @@ fun ModerationPanelScreen(
                     }
                 }
             } else {
+                LaunchedEffect(pendingPosts) {
+                    pendingPosts.forEach(viewModel::cargarResumenIa)
+                }
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -289,7 +293,7 @@ fun ModerationPanelScreen(
                                         }
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            text = "Publicación en categoría ${item.categoria.name}. Descripción coherente. Raza: ${item.raza}. Vacunas: ${item.vacunasDetalle}.",
+                                            text = aiSummaries[item.id] ?: "Generando análisis con IA...",
                                             fontSize = 12.sp,
                                             color = Color(0xFF4A148C),
                                             lineHeight = 16.sp

@@ -24,6 +24,7 @@ class UserRepositoryImpl @Inject constructor(
 
     private val _currentUser = MutableStateFlow<Usuario?>(null)
     override val currentUser: StateFlow<Usuario?> = _currentUser.asStateFlow()
+    override val lastError: StateFlow<String?> = kotlinx.coroutines.flow.MutableStateFlow(null)
 
     init {
         loadUsers()
@@ -112,8 +113,12 @@ class UserRepositoryImpl @Inject constructor(
             prefs.edit { putString("active_session_email", user.correo) }
             return user
         }
+
         return null
     }
+
+    override suspend fun getUserById(id: String): Usuario? =
+        usuarios.values.firstOrNull { it.first.id == id }?.first
 
     override suspend fun register(usuario: Usuario, clave: String): Boolean {
         if (usuarios.containsKey(usuario.correo)) return false

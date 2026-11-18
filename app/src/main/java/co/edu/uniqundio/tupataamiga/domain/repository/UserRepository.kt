@@ -5,8 +5,10 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface UserRepository {
     val currentUser: StateFlow<Usuario?>
+    val lastError: StateFlow<String?>
 
     suspend fun login(correo: String, clave: String): Usuario?
+    suspend fun getUserById(id: String): Usuario?
     suspend fun register(usuario: Usuario, clave: String): Boolean
     suspend fun recuperarContrasena(correo: String): Boolean
     fun setGuestSession()

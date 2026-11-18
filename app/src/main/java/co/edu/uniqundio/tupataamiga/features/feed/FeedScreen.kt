@@ -39,9 +39,11 @@ fun FeedScreen(
     viewModel: FeedViewModel,
     onMascotaClick: (String) -> Unit,
     onCreateClick: () -> Unit,
-    onAlertsClick: () -> Unit = {}
+    onAlertsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
 ) {
     val mascotas by viewModel.mascotas.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var selectedEstadoFilter by remember { mutableStateOf<EstadoPublicacion?>(null) }
 
@@ -87,14 +89,35 @@ fun FeedScreen(
                             .size(36.dp)
                             .clip(CircleShape)
                             .background(brandGreen),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(
-                            text = "MG",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
+                        androidx.compose.material3.Surface(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable(onClick = onProfileClick),
+                            color = Color.Transparent,
+                        ) {
+                            if (!currentUser?.fotoUrl.isNullOrBlank()) {
+                                AsyncImage(
+                                    model = currentUser?.fotoUrl,
+                                    contentDescription = "Foto de perfil",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop,
+                                )
+                            } else {
+                                Text(
+                                    text = currentUser?.nombre
+                                        ?.split(" ")
+                                        ?.mapNotNull { it.firstOrNull()?.uppercase() }
+                                        ?.take(2)
+                                        ?.joinToString("")
+                                        ?: "MG",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                )
+                            }
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

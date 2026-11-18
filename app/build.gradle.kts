@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -21,11 +22,27 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            val relKey = file("release.keystore")
+            if (relKey.exists()) {
+                storeFile = relKey
+                storePassword = "tupataamigakey"
+                keyAlias = "tupataamigakey"
+                keyPassword = "tupataamigakey"
+            } else {
+                storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -34,6 +51,18 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    val openRouterApiKey = providers.gradleProperty("OPENROUTER_API_KEY")
+        .orElse("")
+        .get()
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+    defaultConfig {
+        buildConfigField("String", "OPENROUTER_API_KEY", "\"$openRouterApiKey\"")
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"dn9avxkde\"")
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"jo3jdu4a\"")
     }
 }
 
@@ -51,6 +80,11 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

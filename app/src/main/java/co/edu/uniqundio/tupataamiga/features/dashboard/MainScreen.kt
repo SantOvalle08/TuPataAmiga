@@ -23,6 +23,7 @@ fun MainScreen(
     var currentDestination by remember { mutableStateOf(DashboardDestination.INICIO) }
     val feedViewModel: FeedViewModel = hiltViewModel()
     val createViewModel: CreateViewModel = hiltViewModel()
+    val profileViewModel: ProfileViewModel = hiltViewModel()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -53,6 +54,7 @@ fun MainScreen(
             navController = navController,
             feedViewModel = feedViewModel,
             createViewModel = createViewModel,
+            profileViewModel = profileViewModel,
             onMascotaClick = onMascotaClick,
             onLogout = onLogout,
             onDestinationChange = { destination -> currentDestination = destination },

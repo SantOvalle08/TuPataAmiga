@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +21,8 @@ import co.edu.uniqundio.tupataamiga.features.create.CreateScreen
 import co.edu.uniqundio.tupataamiga.features.create.CreateViewModel
 import co.edu.uniqundio.tupataamiga.features.dashboard.AlertsScreen
 import co.edu.uniqundio.tupataamiga.features.dashboard.ProfileScreen
+import co.edu.uniqundio.tupataamiga.features.dashboard.ProfileViewModel
+import co.edu.uniqundio.tupataamiga.features.dashboard.MapViewModel
 import co.edu.uniqundio.tupataamiga.features.feed.FeedScreen
 import co.edu.uniqundio.tupataamiga.features.feed.FeedViewModel
 
@@ -29,6 +32,7 @@ fun DashboardNavigation(
     navController: NavHostController,
     feedViewModel: FeedViewModel,
     createViewModel: CreateViewModel,
+    profileViewModel: ProfileViewModel,
     onMascotaClick: (String) -> Unit,
     onLogout: () -> Unit = {},
     onDestinationChange: (DashboardDestination) -> Unit = {},
@@ -51,6 +55,12 @@ fun DashboardNavigation(
                         popUpTo(DashboardRoutes.Feed.route)
                     }
                 },
+                onProfileClick = {
+                    onDestinationChange(DashboardDestination.PERFIL)
+                    navController.navigate(DashboardRoutes.Profile.route) {
+                        popUpTo(DashboardRoutes.Feed.route)
+                    }
+                },
             )
         }
         composable(DashboardRoutes.Create.route) {
@@ -61,7 +71,9 @@ fun DashboardNavigation(
             )
         }
         composable(DashboardRoutes.Map.route) {
+            val mapViewModel: MapViewModel = androidx.hilt.navigation.compose.hiltViewModel()
             co.edu.uniqundio.tupataamiga.features.dashboard.MapScreen(
+                mascotas = mapViewModel.mascotas.collectAsState().value,
                 onMascotaClick = onMascotaClick
             )
         }
@@ -70,6 +82,7 @@ fun DashboardNavigation(
         }
         composable(DashboardRoutes.Profile.route) {
             ProfileScreen(
+                viewModel = profileViewModel,
                 onLogoutClick = onLogout,
             )
         }

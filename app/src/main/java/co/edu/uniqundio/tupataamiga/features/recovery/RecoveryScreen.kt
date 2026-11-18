@@ -16,17 +16,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.R
-import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import kotlinx.coroutines.launch
 
 @Composable
 fun RecoveryScreen(
-    userRepository: UserRepository? = null,
+    viewModel: RecoveryViewModel,
     onBack: () -> Unit = {}
 ) {
-    var correo by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var sentSuccess by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -36,16 +33,6 @@ fun RecoveryScreen(
     val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
     val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
     val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
-
-    fun validarCorreo(): Boolean {
-        return if (!correo.contains("@")) {
-            emailError = "Ingresa un correo electrónico válido"
-            false
-        } else {
-            emailError = null
-            true
-        }
-    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -96,7 +83,7 @@ fun RecoveryScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            if (sentSuccess) {
+            if (uiState.sentSuccess) {
                 Surface(
                     color = Color(0xFFE8F5E9),
                     shape = RoundedCornerShape(16.dp),
@@ -114,7 +101,7 @@ fun RecoveryScreen(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Revisa tu bandeja de entrada en $correo para restablecer tu clave.",
+                            text = "Revisa tu bandeja de entrada en ${uiState.correo} para restablecer tu clave.",
                             fontSize = 13.sp,
                             color = Color.DarkGray,
                             textAlign = TextAlign.Center
@@ -136,15 +123,11 @@ fun RecoveryScreen(
                     color = subTextColor
                 )
                 TextField(
-                    value = correo,
-                    onValueChange = {
-                        correo = it
-                        if (emailError != null) emailError = null
-                        if (sentSuccess) sentSuccess = false
-                    },
+                    value = uiState.correo,
+                    onValueChange = viewModel::onCorreoChanged,
                     placeholder = { Text("ejemplo@uniqundio.edu.co") },
                     modifier = Modifier.fillMaxWidth(),
-                    isError = emailError != null,
+                    isError = uiState.emailError != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = fieldBg,
@@ -155,7 +138,7 @@ fun RecoveryScreen(
                     ),
                     singleLine = true
                 )
-                emailError?.let {
+                uiState.emailError?.let {
                     Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                 }
             }
@@ -164,11 +147,9 @@ fun RecoveryScreen(
 
             Button(
                 onClick = {
-                    if (validarCorreo()) {
+                    viewModel.enviarEnlace { mensaje ->
                         coroutineScope.launch {
-                            userRepository?.recuperarContrasena(correo)
-                            sentSuccess = true
-                            snackbarHostState.showSnackbar("Enlace de recuperación enviado a $correo")
+                            snackbarHostState.showSnackbar(mensaje)
                         }
                     }
                 },
@@ -179,7 +160,7 @@ fun RecoveryScreen(
                 shape = RoundedCornerShape(25.dp)
             ) {
                 Text(
-                    text = "ENVIAR ENLACE DE RECUPERACIÓN",
+                    text = if (uiState.isLoading) "ENVIANDO..." else "ENVIAR ENLACE DE RECUPERACIÓN",
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
                     color = Color.White

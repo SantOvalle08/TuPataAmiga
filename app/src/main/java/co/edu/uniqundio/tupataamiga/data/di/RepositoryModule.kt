@@ -1,8 +1,8 @@
 package co.edu.uniqundio.tupataamiga.data.di
 
-import co.edu.uniqundio.tupataamiga.data.repository.memory.MascotaRepositoryImpl
-import co.edu.uniqundio.tupataamiga.data.repository.memory.NotificacionRepositoryImpl
-import co.edu.uniqundio.tupataamiga.data.repository.memory.UserRepositoryImpl
+import co.edu.uniqundio.tupataamiga.data.repository.firebase.FirebaseMascotaRepositoryImpl
+import co.edu.uniqundio.tupataamiga.data.repository.firebase.FirebaseNotificacionRepositoryImpl
+import co.edu.uniqundio.tupataamiga.data.repository.firebase.FirebaseUserRepositoryImpl
 import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
 import co.edu.uniqundio.tupataamiga.domain.repository.NotificacionRepository
 import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
@@ -19,18 +19,18 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMascotaRepository(
-        impl: MascotaRepositoryImpl
+        impl: FirebaseMascotaRepositoryImpl
     ): MascotaRepository
 
     @Binds
     @Singleton
     abstract fun bindUserRepository(
-        impl: UserRepositoryImpl
+        impl: FirebaseUserRepositoryImpl
     ): UserRepository
 
     @Binds
     @Singleton
     abstract fun bindNotificacionRepository(
-        impl: NotificacionRepositoryImpl
+        impl: FirebaseNotificacionRepositoryImpl
     ): NotificacionRepository
 }

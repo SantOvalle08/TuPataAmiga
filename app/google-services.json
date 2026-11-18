@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "113410215576",
+    "project_id": "tupataamiga-46763",
+    "storage_bucket": "tupataamiga-46763.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:113410215576:android:317c1f729f9473e9b98aed",
+        "android_client_info": {
+          "package_name": "co.edu.uniqundio.tupataamiga"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUGyCPcji6btZYMyMorl6A1Ul2TVi4ARw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

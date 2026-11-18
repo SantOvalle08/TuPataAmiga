@@ -4,7 +4,9 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.uniqundio.tupataamiga.data.remote.ai.AIService
 import co.edu.uniqundio.tupataamiga.domain.model.*
+import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import co.edu.uniqundio.tupataamiga.domain.usecase.mascota.CreateMascotaUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -21,7 +23,9 @@ import javax.inject.Inject
 @HiltViewModel
 class CreateViewModel @Inject constructor(
     private val createMascotaUseCase: CreateMascotaUseCase,
-    @ApplicationContext private val context: Context
+    private val aiService: AIService,
+    private val userRepository: UserRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CreateUiState())
@@ -31,7 +35,7 @@ class CreateViewModel @Inject constructor(
         "https://images.unsplash.com/photo-1543466835-00a7907e9de1",
         "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
         "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e",
-        "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2"
+        "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2",
     )
 
     fun onNombreChanged(nombre: String) {
@@ -44,6 +48,20 @@ class CreateViewModel @Inject constructor(
 
     fun onDescripcionChanged(descripcion: String) {
         _uiState.update { it.copy(descripcion = descripcion) }
+    }
+
+    fun generarDescripcionIa(onComplete: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isGeneratingIa = true) }
+            val state = _uiState.value
+            val sug = aiService.sugerirDescripcionMascota(
+                tipoAnimal = state.tipoAnimal.name,
+                raza = state.raza.ifBlank { "Mestizo" },
+                tamano = state.tamano.name,
+            )
+            _uiState.update { it.copy(descripcion = sug, isGeneratingIa = false) }
+            onComplete(sug)
+        }
     }
 
     fun onCategoriaChanged(categoria: Categoria) {
@@ -104,7 +122,7 @@ class CreateViewModel @Inject constructor(
 
     fun createMascota(
         onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
     ) {
         val state = _uiState.value
 
@@ -143,8 +161,9 @@ class CreateViewModel @Inject constructor(
                     descripcion = state.descripcion,
                     imagenUrl = imagenFinal,
                     ubicacion = state.ubicacion,
-                    usuarioId = "user1",
-                    fechaCreacion = "Hace un momento"
+                    usuarioId = userRepository.currentUser.value?.id.orEmpty(),
+                    nombrePublicante = userRepository.currentUser.value?.nombre ?: "Usuario PataAmiga",
+                    fechaCreacion = "Hace un momento",
                 )
 
                 createMascotaUseCase(mascota)
@@ -170,5 +189,6 @@ data class CreateUiState(
     val categoria: Categoria = Categoria.ADOPCION,
     val tipoAnimal: TipoAnimal = TipoAnimal.PERRO,
     val fotosSeleccionadas: List<Uri> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isGeneratingIa: Boolean = false,
 )

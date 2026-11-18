@@ -1,5 +1,8 @@
 package co.edu.uniqundio.tupataamiga.features.register
 
+import android.location.Geocoder
+import android.net.Uri
+import android.view.MotionEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,18 +15,30 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import coil.compose.AsyncImage
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,12 +50,20 @@ fun RegisterScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var mostrarSelectorUbicacion by remember { mutableStateOf(false) }
+    val galleryLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let(viewModel::onFotoSeleccionada)
+    }
 
     val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
     val mainTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.textColor
     val subTextColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.subtextColor
     val brandGreen = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.brandGreenColor
     val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
+    var mostrarClave by remember { mutableStateOf(false) }
+    var mostrarConfirmacion by remember { mutableStateOf(false) }
 
     fun mostrarSnackbar(mensaje: String) {
         coroutineScope.launch {
@@ -94,18 +117,25 @@ fun RegisterScreen(
                     .border(2.dp, brandGreen, CircleShape)
                     .background(fieldBg)
                     .clickable {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar(LocaleManager.tr("Foto seleccionada", "Photo selected"))
-                        }
+                        galleryLauncher.launch("image/*")
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.CameraAlt,
-                    contentDescription = "Cargar foto",
-                    tint = brandGreen,
-                    modifier = Modifier.size(32.dp)
-                )
+                if (uiState.fotoUri != null) {
+                    AsyncImage(
+                        model = uiState.fotoUri,
+                        contentDescription = LocaleManager.tr("Foto de perfil", "Profile photo"),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Cargar foto",
+                        tint = brandGreen,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -187,7 +217,30 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth(),
                         isError = uiState.claveError != null,
                         enabled = !uiState.isLoading,
-                        visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (mostrarClave) {
+                            androidx.compose.ui.text.input.VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = { mostrarClave = !mostrarClave },
+                                enabled = !uiState.isLoading,
+                            ) {
+                                Icon(
+                                    imageVector = if (mostrarClave) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
+                                    contentDescription = LocaleManager.tr(
+                                        "Mostrar contraseña",
+                                        "Show password",
+                                    ),
+                                    tint = brandGreen,
+                                )
+                            }
+                        },
                         shape = RoundedCornerShape(12.dp),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = fieldBg,
@@ -206,6 +259,59 @@ fun RegisterScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
+                        text = LocaleManager.tr("Confirmar contraseña", "Confirm password"),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = subTextColor,
+                    )
+                    TextField(
+                        value = uiState.confirmarClave,
+                        onValueChange = viewModel::onConfirmarClaveChanged,
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = uiState.confirmarClaveError != null,
+                        enabled = !uiState.isLoading,
+                        visualTransformation = if (mostrarConfirmacion) {
+                            androidx.compose.ui.text.input.VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = { mostrarConfirmacion = !mostrarConfirmacion },
+                                enabled = !uiState.isLoading,
+                            ) {
+                                Icon(
+                                    imageVector = if (mostrarConfirmacion) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
+                                    contentDescription = LocaleManager.tr(
+                                        "Mostrar confirmación de contraseña",
+                                        "Show password confirmation",
+                                    ),
+                                    tint = brandGreen,
+                                )
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = fieldBg,
+                            unfocusedContainerColor = fieldBg,
+                            disabledContainerColor = fieldBg,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            errorIndicatorColor = MaterialTheme.colorScheme.error,
+                        ),
+                        singleLine = true,
+                    )
+                    uiState.confirmarClaveError?.let {
+                        Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 11.sp)
+                    }
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
                         text = LocaleManager.tr("Dirección de residencia", "Residential address"),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
@@ -217,11 +323,13 @@ fun RegisterScreen(
                         placeholder = { Text("Armenia, Quindío") },
                         modifier = Modifier.fillMaxWidth(),
                         trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Place,
-                                contentDescription = "Mapa",
-                                tint = brandGreen
-                            )
+                            IconButton(onClick = { mostrarSelectorUbicacion = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Place,
+                                    contentDescription = LocaleManager.tr("Seleccionar en el mapa", "Select on map"),
+                                    tint = brandGreen
+                                )
+                            }
                         },
                         enabled = !uiState.isLoading,
                         shape = RoundedCornerShape(12.dp),
@@ -276,4 +384,83 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
+
+    if (mostrarSelectorUbicacion) {
+        LocationPickerDialog(
+            initialAddress = uiState.direccion,
+            onDismiss = { mostrarSelectorUbicacion = false },
+            onLocationSelected = {
+                viewModel.onDireccionChanged(it)
+                mostrarSelectorUbicacion = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun LocationPickerDialog(
+    initialAddress: String,
+    onDismiss: () -> Unit,
+    onLocationSelected: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var address by remember { mutableStateOf(initialAddress) }
+    var point by remember { mutableStateOf(GeoPoint(4.5375, -75.6780)) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(LocaleManager.tr("Selecciona tu residencia", "Select your residence")) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(address, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
+                AndroidView(
+                    modifier = Modifier.fillMaxWidth().height(300.dp),
+                    factory = { ctx ->
+                        Configuration.getInstance().load(
+                            ctx,
+                            android.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+                        )
+                        MapView(ctx).apply {
+                            setTileSource(TileSourceFactory.MAPNIK)
+                            setMultiTouchControls(true)
+                            controller.setZoom(14.5)
+                            controller.setCenter(point)
+                            setOnTouchListener { view, event ->
+                                if (event.action == MotionEvent.ACTION_UP) {
+                                    val geoPoint = (view as MapView).projection
+                                        .fromPixels(event.x.toInt(), event.y.toInt())
+                                    point = GeoPoint(geoPoint.latitude, geoPoint.longitude)
+                                    scope.launch {
+                                        val resolved = withContext(Dispatchers.IO) {
+                                            runCatching {
+                                                Geocoder(context).getFromLocation(
+                                                    geoPoint.latitude,
+                                                    geoPoint.longitude,
+                                                    1
+                                                )?.firstOrNull()?.getAddressLine(0)
+                                            }.getOrNull()
+                                        }
+                                        address = resolved
+                                            ?: "${geoPoint.latitude}, ${geoPoint.longitude}"
+                                    }
+                                }
+                                false
+                            }
+                        }
+                    }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onLocationSelected(address) }) {
+                Text(LocaleManager.tr("Usar ubicación", "Use location"))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(LocaleManager.tr("Cancelar", "Cancel"))
+            }
+        }
+    )
 }

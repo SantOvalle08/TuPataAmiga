@@ -1,5 +1,7 @@
 package co.edu.uniqundio.tupataamiga.features.dashboard
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 
 data class NotificacionUiModel(
@@ -60,7 +63,10 @@ fun AlertsScreen(
     val fieldBg = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.fieldColor
 
     var activeFullScreenType by remember { mutableStateOf<TipoNotificacion?>(null) }
+    var activeNotification by remember { mutableStateOf<NotificacionUiModel?>(null) }
     val notificacionesState by viewModel.notificaciones.collectAsState()
+    val publicacionesAprobadas by viewModel.publicacionesAprobadas.collectAsState()
+    val usuariosInteresados by viewModel.usuariosInteresados.collectAsState()
 
     val notificaciones = remember(notificacionesState) {
         notificacionesState.map { domainNotif ->
@@ -87,34 +93,43 @@ fun AlertsScreen(
             VerifiedPostsFullScreen(
                 onBack = { activeFullScreenType = null },
                 brandGreen = brandGreen,
-                fieldBg = fieldBg
+                fieldBg = fieldBg,
+                mascotas = publicacionesAprobadas,
+                notification = activeNotification,
             )
         }
         TipoNotificacion.INTERES -> {
             InterestedPeopleFullScreen(
                 onBack = { activeFullScreenType = null },
                 brandGreen = brandGreen,
-                fieldBg = fieldBg
+                fieldBg = fieldBg,
+                mascotas = publicacionesAprobadas,
+                notification = activeNotification,
+                usuarios = usuariosInteresados,
             )
         }
         TipoNotificacion.COMENTARIO -> {
             CommentsThreadFullScreen(
                 onBack = { activeFullScreenType = null },
                 brandGreen = brandGreen,
-                fieldBg = fieldBg
+                fieldBg = fieldBg,
+                mascotas = publicacionesAprobadas,
+                notification = activeNotification,
             )
         }
         TipoNotificacion.LOGRO -> {
             AchievementDetailFullScreen(
                 onBack = { activeFullScreenType = null },
                 brandGreen = brandGreen,
-                fieldBg = fieldBg
+                fieldBg = fieldBg,
+                notification = activeNotification,
             )
         }
         TipoNotificacion.RECHAZADA -> {
             RejectionDetailFullScreen(
                 onBack = { activeFullScreenType = null },
-                brandGreen = brandGreen
+                brandGreen = brandGreen,
+                notification = activeNotification,
             )
         }
         null -> {
@@ -190,6 +205,7 @@ fun AlertsScreen(
                                 .fillMaxWidth()
                                 .clickable {
                                     activeFullScreenType = notif.tipo
+                                    activeNotification = notif
                                 }
                         ) {
                             Row(
@@ -282,15 +298,17 @@ fun AlertsScreen(
 private fun VerifiedPostsFullScreen(
     onBack: () -> Unit,
     brandGreen: Color,
-    fieldBg: Color
+    fieldBg: Color,
+    mascotas: List<co.edu.uniqundio.tupataamiga.domain.model.Mascota>,
+    notification: NotificacionUiModel?,
 ) {
-    val verifiedList = remember {
-        listOf(
-            VerifiedPostItem("1", "Rex busca un hogar amoroso", "Perro · Labrador · Grande", "El Bosque, Armenia", "Aprobada hoy"),
-            VerifiedPostItem("2", "Michi en adopción responsable", "Gato · Siamés · Pequeño", "Centro, Armenia", "Aprobada ayer"),
-            VerifiedPostItem("3", "Lucas busca a su familia", "Perro · Beagle · Mediano", "Granada, Armenia", "Aprobada hace 2 días"),
-            VerifiedPostItem("4", "Toby el perro rescatado", "Perro · Mestizo · Mediano", "San José, Armenia", "Aprobada hace 3 días"),
-            VerifiedPostItem("5", "Mimi en adopción", "Gato · Persa · Pequeño", "La Castellana, Armenia", "Aprobada hace 4 días")
+    val verifiedList = mascotas.map { mascota ->
+        VerifiedPostItem(
+            id = mascota.id,
+            nombre = mascota.nombre,
+            categoria = "${mascota.tipoAnimal.name} · ${mascota.raza} · ${mascota.tamano.name}",
+            ubicacion = mascota.ubicacion,
+            aprobadaTiempo = mascota.fechaCreacion,
         )
     }
 
@@ -484,16 +502,23 @@ private fun VerifiedPostsFullScreen(
 private fun InterestedPeopleFullScreen(
     onBack: () -> Unit,
     brandGreen: Color,
-    fieldBg: Color
+    fieldBg: Color,
+    mascotas: List<co.edu.uniqundio.tupataamiga.domain.model.Mascota>,
+    notification: NotificacionUiModel?,
+    usuarios: Map<String, co.edu.uniqundio.tupataamiga.domain.model.Usuario>,
 ) {
-    val interestedList = remember {
-        listOf(
-            InterestedUserItem("1", "Ana López", "analopez@gmail.com", "hace 10 min"),
-            InterestedUserItem("2", "Carlos Pérez", "carlosperez@gmail.com", "hace 25 min"),
-            InterestedUserItem("3", "María Fernanda", "mariaf@gmail.com", "hace 40 min"),
-            InterestedUserItem("4", "Juan Gómez", "juangomez@gmail.com", "hace 1 h"),
-            InterestedUserItem("5", "Sofía Ramírez", "sofiar@gmail.com", "hace 2 h")
-        )
+    val context = LocalContext.current
+    val interestedList = remember(mascotas) {
+        mascotas.flatMap { mascota ->
+            mascota.interesadosIds.map { userId ->
+                InterestedUserItem(
+                    id = "${mascota.id}_$userId",
+                    nombre = usuarios[userId]?.nombre ?: "Usuario no disponible",
+                    correo = usuarios[userId]?.correo ?: "ID: $userId",
+                    tiempo = mascota.nombre,
+                )
+            }
+        }.distinctBy { it.correo }
     }
 
     Scaffold(
@@ -530,8 +555,17 @@ private fun InterestedPeopleFullScreen(
                     Icon(Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(28.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text("5 Personas Interesadas en 'Rex'", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFFC62828))
-                        Text("Estas personas han marcado interés directo en adoptar a Rex.", fontSize = 12.sp, color = Color.DarkGray)
+                        Text(
+                            notification?.titulo ?: "${interestedList.size} Personas Interesadas",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = Color(0xFFC62828),
+                        )
+                        Text(
+                            notification?.cuerpo ?: "Personas que han marcado interés en publicaciones aprobadas.",
+                            fontSize = 12.sp,
+                            color = Color.DarkGray,
+                        )
                     }
                 }
             }
@@ -539,6 +573,9 @@ private fun InterestedPeopleFullScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (interestedList.isEmpty()) {
+                    item { Text("Todavía no hay intereses registrados.", color = Color.Gray) }
+                }
                 items(interestedList, key = { it.id }) { user ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -570,7 +607,21 @@ private fun InterestedPeopleFullScreen(
                             }
 
                             Button(
-                                onClick = { },
+                                onClick = {
+                                    if (user.correo.contains("@")) {
+                                        val intent = Intent(
+                                            Intent.ACTION_SENDTO,
+                                            Uri.parse("mailto:${user.correo}"),
+                                        ).apply {
+                                            putExtra(
+                                                Intent.EXTRA_SUBJECT,
+                                                "Interés en ${user.tiempo}",
+                                            )
+                                        }
+                                        context.startActivity(intent)
+                                    }
+                                },
+                                enabled = user.correo.contains("@"),
                                 colors = ButtonDefaults.buttonColors(containerColor = brandGreen),
                                 shape = RoundedCornerShape(16.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
@@ -591,15 +642,24 @@ private fun InterestedPeopleFullScreen(
 private fun CommentsThreadFullScreen(
     onBack: () -> Unit,
     brandGreen: Color,
-    fieldBg: Color
+    fieldBg: Color,
+    mascotas: List<co.edu.uniqundio.tupataamiga.domain.model.Mascota>,
+    notification: NotificacionUiModel?,
 ) {
     var nuevoComentario by remember { mutableStateOf("") }
-    val comentarios = remember {
-        mutableStateListOf(
-            CommentItem("1", "Ana López", "¡Hola! Quisiera saber si Rex aún está disponible para adopción, me interesa mucho.", "hace 2 h"),
-            CommentItem("2", "Pedro Morales (Autor)", "¡Hola Ana! Sí, sigue disponible. Nos podemos poner en contacto por mensaje directo.", "hace 1 h"),
-            CommentItem("3", "Carlos Herrera", "Hermoso perrito, espero encuentre pronto un hogar amoroso.", "hace 30 min")
-        )
+    val comentarios = remember(mascotas) {
+        mutableStateListOf<CommentItem>().apply {
+            mascotas.flatMap { it.comentarios }.forEach { comentario ->
+                add(
+                    CommentItem(
+                        id = comentario.id,
+                        usuario = comentario.nombreUsuario,
+                        texto = comentario.texto,
+                        tiempo = comentario.fecha,
+                    ),
+                )
+            }
+        }
     }
 
     Scaffold(
@@ -662,6 +722,14 @@ private fun CommentsThreadFullScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (comentarios.isEmpty()) {
+                item { Text("Todavía no hay comentarios registrados.", color = Color.Gray) }
+            }
+            if (notification != null) {
+                item {
+                    Text(notification.cuerpo, color = Color.DarkGray, fontSize = 13.sp)
+                }
+            }
             items(comentarios, key = { it.id }) { comm ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -693,7 +761,8 @@ private fun CommentsThreadFullScreen(
 private fun AchievementDetailFullScreen(
     onBack: () -> Unit,
     brandGreen: Color,
-    fieldBg: Color
+    fieldBg: Color,
+    notification: NotificacionUiModel?,
 ) {
     Scaffold(
         topBar = {
@@ -735,12 +804,18 @@ private fun AchievementDetailFullScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Primera Huella", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color.Black)
+            Text(
+                notification?.titulo ?: "Logro desbloqueado",
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = Color.Black,
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "¡Felicitaciones! Obtuviste esta insignia por realizar tu primera publicación de mascota en PataAmiga. Has ganado +50 puntos de experiencia en la comunidad.",
+                text = notification?.cuerpo
+                    ?: "Has desbloqueado un nuevo logro por tu actividad en la comunidad.",
                 fontSize = 14.sp,
                 color = Color.DarkGray,
                 lineHeight = 22.sp,
@@ -766,7 +841,8 @@ private fun AchievementDetailFullScreen(
 @Composable
 private fun RejectionDetailFullScreen(
     onBack: () -> Unit,
-    brandGreen: Color
+    brandGreen: Color,
+    notification: NotificacionUiModel?,
 ) {
     Scaffold(
         topBar = {
@@ -815,7 +891,8 @@ private fun RejectionDetailFullScreen(
                     Text("Motivo expresado por el moderador:", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFFC62828))
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        "\"Las imágenes adjuntas no corresponden a la descripción del animal. Por favor asegúrate de subir fotografías claras e información precisa.\"",
+                        notification?.cuerpo
+                            ?: "El moderador no aprobó esta publicación. Revisa los datos e inténtalo nuevamente.",
                         fontSize = 13.sp,
                         color = Color.DarkGray,
                         lineHeight = 18.sp

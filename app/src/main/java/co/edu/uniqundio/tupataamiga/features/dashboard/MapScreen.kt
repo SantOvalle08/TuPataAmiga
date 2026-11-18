@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import co.edu.uniqundio.tupataamiga.ui.theme.abrirComoLlegar
+import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -56,6 +57,7 @@ data class MapPetMarker(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
+    mascotas: List<Mascota>,
     onMascotaClick: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -68,14 +70,19 @@ fun MapScreen(
 
     var selectedFilter by remember { mutableStateOf("Todos") }
 
-    val petMarkers = remember {
-        listOf(
-            MapPetMarker("1", "Rex - Labrador", "Adopción", "El Bosque, Armenia", 4.5389, -75.6781, "a 1.2 km", Color(0xFF2E7D32)),
-            MapPetMarker("2", "Michi - Siamés", "Perdidos", "Centro, Armenia", 4.5338, -75.6811, "a 0.5 km", Color(0xFFC62828)),
-            MapPetMarker("3", "Perrito Mestizo", "Encontrados", "Plaza de Bolívar", 4.5321, -75.6834, "a 0.8 km", Color(0xFF1565C0)),
-            MapPetMarker("4", "Gata Persa", "Hogar Temporal", "La Castellana", 4.5456, -75.6723, "a 2.4 km", Color(0xFFF57F17)),
-            MapPetMarker("5", "Toby - Beagle", "Adopción", "Granada, Armenia", 4.5412, -75.6750, "a 1.8 km", Color(0xFF2E7D32))
-        )
+    val petMarkers = remember(mascotas) {
+        mascotas.mapIndexed { index, mascota ->
+            MapPetMarker(
+                id = mascota.id,
+                nombre = mascota.nombre,
+                categoria = mascota.categoria.name,
+                lugar = mascota.ubicacion,
+                lat = 4.5389 + (index % 5) * 0.0015,
+                lng = -75.6781 - (index % 5) * 0.0012,
+                distancia = "",
+                markerColor = Color(0xFF2E7D32),
+            )
+        }
     }
 
     val filteredMarkers = remember(selectedFilter, petMarkers) {
@@ -83,7 +90,7 @@ fun MapScreen(
         else petMarkers.filter { it.categoria == selectedFilter }
     }
 
-    var selectedMarker by remember { mutableStateOf<MapPetMarker?>(petMarkers.first()) }
+    var selectedMarker by remember { mutableStateOf<MapPetMarker?>(null) }
 
     val pawBitmap = rememberVectorToBitmap(
         imageVector = Icons.Default.Pets,
@@ -175,10 +182,10 @@ fun MapScreen(
             ) {
                 val filterList = listOf(
                     "Todos" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Todos", "All"),
-                    "Adopción" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Adopción", "Adoption"),
-                    "Perdidos" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Perdidos", "Lost"),
-                    "Encontrados" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Encontrados", "Found"),
-                    "Hogar Temporal" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Hogar Temporal", "Foster Home")
+                    "ADOPCION" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Adopción", "Adoption"),
+                    "PERDIDO" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Perdidos", "Lost"),
+                    "ENCONTRADO" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Encontrados", "Found"),
+                    "HOGAR_TEMPORAL" to co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Hogar Temporal", "Foster Home")
                 )
 
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
