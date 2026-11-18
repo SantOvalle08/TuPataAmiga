@@ -15,4 +15,5 @@ interface MascotaRepository {
     suspend fun finalizarMascota(id: String)
     suspend fun agregarComentario(mascotaId: String, comentario: Comentario)
     suspend fun incrementarInteres(mascotaId: String)
+    suspend fun quitarInteres(mascotaId: String)
 }

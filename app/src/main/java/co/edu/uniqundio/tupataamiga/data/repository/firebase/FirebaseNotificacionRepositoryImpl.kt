@@ -4,6 +4,7 @@ import co.edu.uniqundio.tupataamiga.domain.model.Notificacion
 import co.edu.uniqundio.tupataamiga.domain.repository.NotificacionRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.FirebaseAuth
+import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -13,6 +14,10 @@ import javax.inject.Singleton
 
 @Singleton
 class FirebaseNotificacionRepositoryImpl @Inject constructor() : NotificacionRepository {
+
+    private companion object {
+        const val TAG = "FirebaseNotificacionRepo"
+    }
 
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
@@ -33,9 +38,12 @@ class FirebaseNotificacionRepositoryImpl @Inject constructor() : NotificacionRep
                 }
                 if (snapshot != null) {
                     val list = snapshot.documents.mapNotNull { doc ->
-                        runCatching {
+                        try {
                             doc.toObject(Notificacion::class.java)?.copy(id = doc.id)
-                        }.getOrNull()
+                        } catch (exception: Exception) {
+                            Log.e(TAG, "No se pudo mapear la notificación ${doc.id}", exception)
+                            null
+                        }
                     }
                     trySend(list)
                 }
@@ -44,8 +52,14 @@ class FirebaseNotificacionRepositoryImpl @Inject constructor() : NotificacionRep
     }
 
     override suspend fun agregarNotificacion(notificacion: Notificacion) {
-        runCatching {
+        try {
+            require(notificacion.usuarioId.isNotBlank()) {
+                "No se puede crear una notificación sin usuarioId"
+            }
             firestore.collection("notificaciones").document(notificacion.id).set(notificacion).await()
+        } catch (exception: Exception) {
+            Log.e(TAG, "No se pudo guardar la notificación ${notificacion.id}", exception)
+            throw exception
         }
     }
 

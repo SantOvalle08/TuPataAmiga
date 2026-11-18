@@ -1,5 +1,7 @@
 package co.edu.uniqundio.tupataamiga.features.detail
 
+import android.content.Intent
+import android.net.Uri
 import android.preference.PreferenceManager
 import android.location.Geocoder
 import androidx.compose.foundation.background
@@ -31,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import co.edu.uniqundio.tupataamiga.ui.theme.abrirComoLlegar
+import co.edu.uniqundio.tupataamiga.domain.model.Categoria
+import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -60,6 +64,7 @@ fun DetailScreen(
     val fieldBg = Color(0xFFE8F5E9)
 
     val mascota = uiState.mascota
+    val propietario = uiState.propietario
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -110,12 +115,21 @@ fun DetailScreen(
                         .background(fieldBg),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Pets,
-                        contentDescription = null,
-                        tint = brandGreen,
-                        modifier = Modifier.size(80.dp),
-                    )
+                    if (mascota.imagenUrl.isBlank()) {
+                        Icon(
+                            imageVector = Icons.Default.Pets,
+                            contentDescription = null,
+                            tint = brandGreen,
+                            modifier = Modifier.size(80.dp),
+                        )
+                    } else {
+                        AsyncImage(
+                            model = mascota.imagenUrl,
+                            contentDescription = mascota.nombre,
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
 
                     Row(
                         modifier = Modifier
@@ -226,7 +240,7 @@ fun DetailScreen(
 
                 // Title
                 Text(
-                    text = "${mascota.nombre} busca un hogar amoroso",
+                    text = mascota.nombre,
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
@@ -245,17 +259,28 @@ fun DetailScreen(
                             .background(brandGreen),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = "CH", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(
+                            text = propietario?.nombre
+                                ?.split(" ")
+                                ?.mapNotNull { it.firstOrNull()?.uppercase() }
+                                ?.take(2)
+                                ?.joinToString("")
+                                ?: "U",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                        )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "Carlos Herrera",
+                            text = propietario?.nombre
+                                ?: mascota.nombrePublicante.ifBlank { "Usuario PataAmiga" },
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                         )
                         Text(
-                            text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("hace 2 horas", "2 hours ago"),
+                            text = mascota.fechaCreacion,
                             color = Color.Gray,
                             fontSize = 11.sp,
                         )
@@ -296,7 +321,7 @@ fun DetailScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Tamaño", "Size"), fontSize = 11.sp, color = Color.Gray)
                                 Text(
-                                    text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Grande", "Large"),
+                                    text = mascota.tamano.name.lowercase().replaceFirstChar { it.uppercase() },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
                                 )
@@ -304,7 +329,11 @@ fun DetailScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Vacunas", "Vaccines"), fontSize = 11.sp, color = Color.Gray)
                                 Text(
-                                    text = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("✅ Al día", "✅ Up to date"),
+                                    text = if (mascota.vacunasAlDia) {
+                                        "✅ ${mascota.vacunasDetalle}"
+                                    } else {
+                                        mascota.vacunasDetalle
+                                    },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
                                 )
@@ -542,6 +571,62 @@ fun DetailScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Action Buttons
+                if (
+                    mascota.categoria == Categoria.ADOPCION ||
+                    mascota.categoria == Categoria.PERDIDO ||
+                    mascota.categoria == Categoria.ENCONTRADO
+                ) {
+                    Button(
+                        onClick = {
+                            val correo = propietario?.correo
+                            if (!correo.isNullOrBlank() && correo.contains("@")) {
+                                context.startActivity(
+                                    Intent(
+                                        Intent.ACTION_SENDTO,
+                                        Uri.parse("mailto:$correo"),
+                                    ).apply {
+                                        putExtra(
+                                            Intent.EXTRA_SUBJECT,
+                                            "Contacto sobre la publicación: ${mascota.nombre}",
+                                        )
+                                    },
+                                )
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        "No hay un correo de contacto disponible para esta publicación",
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = brandGreen),
+                        shape = RoundedCornerShape(23.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = when (mascota.categoria) {
+                                Categoria.ADOPCION -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Adoptar", "Adopt")
+                                Categoria.PERDIDO, Categoria.ENCONTRADO -> co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Reportar", "Report")
+                                else -> ""
+                            },
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontSize = 13.sp,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
                 Button(
                     onClick = { showDeleteDialog = true },
                     modifier = Modifier

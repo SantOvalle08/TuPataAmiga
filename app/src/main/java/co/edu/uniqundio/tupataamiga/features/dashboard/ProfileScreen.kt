@@ -596,13 +596,30 @@ fun ProfileScreen(
         AlertDialog(
             onDismissRequest = { showDeleteAccountDialog = false },
             title = { Text("¿Eliminar cuenta permanentemente?") },
-            text = { Text("Esta acción removerá tu cuenta y tus publicaciones de la plataforma.") },
+            text = {
+                Text(
+                    "Esta acción es permanente y no se puede deshacer. " +
+                        "Se eliminará tu cuenta de Firebase y deberás crear una nueva cuenta " +
+                        "si quieres volver a usar la aplicación.",
+                )
+            },
             confirmButton = {
                 Button(
                     onClick = {
                         showDeleteAccountDialog = false
-                        viewModel.deleteAccount {
-                            onLogoutClick()
+                        viewModel.deleteAccount { deleted ->
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    if (deleted) {
+                                        "Cuenta eliminada permanentemente"
+                                    } else {
+                                        "No se pudo eliminar la cuenta. Inténtalo nuevamente."
+                                    },
+                                )
+                            }
+                            if (deleted) {
+                                onLogoutClick()
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),

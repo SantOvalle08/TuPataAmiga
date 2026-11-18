@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import co.edu.uniqundio.tupataamiga.domain.model.Comentario
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 import co.edu.uniqundio.tupataamiga.domain.model.Notificacion
+import co.edu.uniqundio.tupataamiga.domain.model.Usuario
 import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
 import co.edu.uniqundio.tupataamiga.domain.repository.NotificacionRepository
 import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
@@ -21,6 +22,7 @@ import javax.inject.Inject
 
 data class DetailUiState(
     val mascota: Mascota? = null,
+    val propietario: Usuario? = null,
     val nuevoComentarioTexto: String = "",
 )
 
@@ -43,9 +45,22 @@ class DetailViewModel @Inject constructor(
 
     private fun loadMascota() {
         viewModelScope.launch {
+            var propietarioIdCargado: String? = null
+            var propietario: Usuario? = null
             mascotaRepository.observeMascotas().collect { list ->
                 val encontrada = list.find { it.id == mascotaId }
-                _uiState.update { it.copy(mascota = encontrada) }
+                if (encontrada != null && encontrada.usuarioId != propietarioIdCargado) {
+                    propietarioIdCargado = encontrada.usuarioId
+                    propietario = encontrada.usuarioId
+                        .takeIf { it.isNotBlank() }
+                        ?.let { runCatching { userRepository.getUserById(it) }.getOrNull() }
+                }
+                _uiState.update {
+                    it.copy(
+                        mascota = encontrada,
+                        propietario = propietario,
+                    )
+                }
             }
         }
     }

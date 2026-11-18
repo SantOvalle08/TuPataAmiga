@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -210,12 +211,21 @@ fun ModerationPanelScreen(
                                             .background(fieldBg),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Pets,
-                                            contentDescription = null,
-                                            tint = brandGreen,
-                                            modifier = Modifier.size(36.dp)
-                                        )
+                                        if (item.imagenUrl.isBlank()) {
+                                            Icon(
+                                                imageVector = Icons.Default.Pets,
+                                                contentDescription = null,
+                                                tint = brandGreen,
+                                                modifier = Modifier.size(36.dp)
+                                            )
+                                        } else {
+                                            AsyncImage(
+                                                model = item.imagenUrl,
+                                                contentDescription = item.nombre,
+                                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        }
                                     }
 
                                     Spacer(modifier = Modifier.width(12.dp))
