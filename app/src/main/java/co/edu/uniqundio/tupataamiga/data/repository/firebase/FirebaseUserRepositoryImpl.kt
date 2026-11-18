@@ -66,6 +66,7 @@ class FirebaseUserRepositoryImpl @Inject constructor() : UserRepository {
             createdUser.updateProfile(
                 com.google.firebase.auth.UserProfileChangeRequest.Builder()
                     .setDisplayName(usuario.nombre)
+                    .setPhotoUri(usuario.fotoUrl.takeIf { it.isNotBlank() }?.let(android.net.Uri::parse))
                     .build(),
             ).await()
             _currentUser.value = nuevoUsuario
@@ -112,6 +113,8 @@ class FirebaseUserRepositoryImpl @Inject constructor() : UserRepository {
             nombre = document?.getString("nombre") ?: displayName ?: email.substringBefore("@"),
             correo = email,
             rol = role,
+            direccion = document?.getString("direccion").orEmpty(),
+            fotoUrl = document?.getString("fotoUrl").orEmpty(),
         )
         _currentUser.value = user
         return user

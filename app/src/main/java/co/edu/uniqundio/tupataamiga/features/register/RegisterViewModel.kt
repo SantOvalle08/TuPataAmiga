@@ -1,12 +1,14 @@
 package co.edu.uniqundio.tupataamiga.features.register
 
 import android.util.Patterns
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniqundio.tupataamiga.domain.model.Rol
 import co.edu.uniqundio.tupataamiga.domain.model.Usuario
 import co.edu.uniqundio.tupataamiga.domain.usecase.user.RegisterUserUseCase
 import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
+import co.edu.uniqundio.tupataamiga.data.remote.cloudinary.CloudinaryService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +22,7 @@ import javax.inject.Inject
 class RegisterViewModel @Inject constructor(
     private val registerUserUseCase: RegisterUserUseCase,
     private val userRepository: UserRepository,
+    private val cloudinaryService: CloudinaryService,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -72,6 +75,10 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
+    fun onFotoSeleccionada(uri: Uri) {
+        _uiState.update { it.copy(fotoUri = uri) }
+    }
+
     fun register(onSuccess: () -> Unit, onError: (String) -> Unit) {
         val state = _uiState.value
         val nameErr = if (state.nombre.isBlank()) "El nombre es obligatorio" else null
@@ -98,11 +105,22 @@ class RegisterViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
+            val fotoUrl = state.fotoUri?.let { uri ->
+                try {
+                    cloudinaryService.uploadImage(uri)
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(isLoading = false) }
+                    onError(e.message ?: "No se pudo subir la foto")
+                    return@launch
+                }
+            }.orEmpty()
             val usuario = Usuario(
                 id = UUID.randomUUID().toString(),
                 nombre = state.nombre,
                 correo = state.correo,
-                rol = Rol.USUARIO
+                rol = Rol.USUARIO,
+                direccion = state.direccion,
+                fotoUrl = fotoUrl,
             )
             val success = registerUserUseCase(usuario, state.clave)
             _uiState.update { it.copy(isLoading = false) }
@@ -137,6 +155,7 @@ data class RegisterUiState(
     val clave: String = "",
     val confirmarClave: String = "",
     val direccion: String = "Armenia, Quindío",
+    val fotoUri: Uri? = null,
     val nombreError: String? = null,
     val correoError: String? = null,
     val claveError: String? = null,
