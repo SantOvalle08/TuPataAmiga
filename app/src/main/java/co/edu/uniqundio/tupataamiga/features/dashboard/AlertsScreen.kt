@@ -61,6 +61,7 @@ fun AlertsScreen(
 
     var activeFullScreenType by remember { mutableStateOf<TipoNotificacion?>(null) }
     val notificacionesState by viewModel.notificaciones.collectAsState()
+    val publicacionesAprobadas by viewModel.publicacionesAprobadas.collectAsState()
 
     val notificaciones = remember(notificacionesState) {
         notificacionesState.map { domainNotif ->
@@ -87,7 +88,8 @@ fun AlertsScreen(
             VerifiedPostsFullScreen(
                 onBack = { activeFullScreenType = null },
                 brandGreen = brandGreen,
-                fieldBg = fieldBg
+                fieldBg = fieldBg,
+                mascotas = publicacionesAprobadas,
             )
         }
         TipoNotificacion.INTERES -> {
@@ -282,15 +284,16 @@ fun AlertsScreen(
 private fun VerifiedPostsFullScreen(
     onBack: () -> Unit,
     brandGreen: Color,
-    fieldBg: Color
+    fieldBg: Color,
+    mascotas: List<co.edu.uniqundio.tupataamiga.domain.model.Mascota>,
 ) {
-    val verifiedList = remember {
-        listOf(
-            VerifiedPostItem("1", "Rex busca un hogar amoroso", "Perro · Labrador · Grande", "El Bosque, Armenia", "Aprobada hoy"),
-            VerifiedPostItem("2", "Michi en adopción responsable", "Gato · Siamés · Pequeño", "Centro, Armenia", "Aprobada ayer"),
-            VerifiedPostItem("3", "Lucas busca a su familia", "Perro · Beagle · Mediano", "Granada, Armenia", "Aprobada hace 2 días"),
-            VerifiedPostItem("4", "Toby el perro rescatado", "Perro · Mestizo · Mediano", "San José, Armenia", "Aprobada hace 3 días"),
-            VerifiedPostItem("5", "Mimi en adopción", "Gato · Persa · Pequeño", "La Castellana, Armenia", "Aprobada hace 4 días")
+    val verifiedList = mascotas.map { mascota ->
+        VerifiedPostItem(
+            id = mascota.id,
+            nombre = mascota.nombre,
+            categoria = "${mascota.tipoAnimal.name} · ${mascota.raza} · ${mascota.tamano.name}",
+            ubicacion = mascota.ubicacion,
+            aprobadaTiempo = mascota.fechaCreacion,
         )
     }
 

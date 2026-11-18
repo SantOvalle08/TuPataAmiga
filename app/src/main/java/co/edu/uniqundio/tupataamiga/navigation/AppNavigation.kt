@@ -15,6 +15,7 @@ import co.edu.uniqundio.tupataamiga.features.home.HomeViewModel
 import co.edu.uniqundio.tupataamiga.features.login.LoginScreen
 import co.edu.uniqundio.tupataamiga.features.login.LoginViewModel
 import co.edu.uniqundio.tupataamiga.features.recovery.RecoveryScreen
+import co.edu.uniqundio.tupataamiga.features.recovery.RecoveryViewModel
 import co.edu.uniqundio.tupataamiga.features.register.RegisterScreen
 import co.edu.uniqundio.tupataamiga.features.register.RegisterViewModel
 
@@ -62,7 +63,9 @@ fun AppNavigation() {
             )
         }
         composable(MainRoutes.Recovery.route) {
+            val viewModel: RecoveryViewModel = hiltViewModel()
             RecoveryScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() }
             )
         }

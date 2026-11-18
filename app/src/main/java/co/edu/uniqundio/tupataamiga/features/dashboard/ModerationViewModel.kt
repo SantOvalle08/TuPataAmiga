@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ModerationViewModel @Inject constructor(
     private val mascotaRepository: MascotaRepository,
-    private val notificacionRepository: NotificacionRepository
+    private val notificacionRepository: NotificacionRepository,
 ) : ViewModel() {
 
     val pendingPosts: StateFlow<List<Mascota>> = mascotaRepository.observeMascotas()
@@ -39,6 +39,7 @@ class ModerationViewModel @Inject constructor(
 
     fun aprobarPublicacion(id: String, nombreMascota: String) {
         viewModelScope.launch {
+            val mascota = mascotaRepository.getMascotaById(id)
             mascotaRepository.aprobarMascota(id)
             notificacionRepository.agregarNotificacion(
                 Notificacion(
@@ -47,7 +48,8 @@ class ModerationViewModel @Inject constructor(
                     cuerpo = "Tu publicación \"$nombreMascota\" fue aprobada y ya es visible en el Feed.",
                     tiempo = "hace un momento",
                     tipo = "VERIFICADA",
-                    leido = false
+                    leido = false,
+                    usuarioId = mascota?.usuarioId.orEmpty()
                 )
             )
         }
@@ -55,6 +57,7 @@ class ModerationViewModel @Inject constructor(
 
     fun rechazarPublicacion(id: String, nombreMascota: String, motivo: String) {
         viewModelScope.launch {
+            val mascota = mascotaRepository.getMascotaById(id)
             mascotaRepository.rechazarMascota(id, motivo)
             notificacionRepository.agregarNotificacion(
                 Notificacion(
@@ -63,7 +66,8 @@ class ModerationViewModel @Inject constructor(
                     cuerpo = "Publicación \"$nombreMascota\": $motivo",
                     tiempo = "hace un momento",
                     tipo = "RECHAZADA",
-                    leido = false
+                    leido = false,
+                    usuarioId = mascota?.usuarioId.orEmpty()
                 )
             )
         }

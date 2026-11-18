@@ -20,5 +20,6 @@ data class Mascota(
     val fechaCreacion: String = "Hoy",
     val comentarios: List<Comentario> = emptyList(),
     val interesAdopcionCount: Int = 0,
+    val interesadosIds: List<String> = emptyList(),
     val motivoRechazo: String = ""
 )

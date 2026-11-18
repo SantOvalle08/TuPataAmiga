@@ -51,6 +51,18 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    val openRouterApiKey = providers.gradleProperty("OPENROUTER_API_KEY")
+        .orElse("")
+        .get()
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+    defaultConfig {
+        buildConfigField("String", "OPENROUTER_API_KEY", "\"$openRouterApiKey\"")
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"dn9avxkde\"")
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"jo3jdu4a\"")
     }
 }
 
@@ -72,7 +84,6 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -55,6 +55,8 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val myPublications by viewModel.myPublications.collectAsState()
+    val adoptionInterests by viewModel.adoptionInterests.collectAsState()
     val context = LocalContext.current
 
     val backgroundColor = co.edu.uniqundio.tupataamiga.ui.theme.ThemeManager.backgroundColor
@@ -103,13 +105,15 @@ fun ProfileScreen(
         MyPublicationsFullScreen(
             onBack = { showMyPublicationsScreen = false },
             brandGreen = brandGreen,
-            fieldBg = fieldBg
+            fieldBg = fieldBg,
+            mascotas = myPublications,
         )
     } else if (showMyInterestsScreen) {
         MyAdoptionInterestsFullScreen(
             onBack = { showMyInterestsScreen = false },
             brandGreen = brandGreen,
-            fieldBg = fieldBg
+            fieldBg = fieldBg,
+            mascotas = adoptionInterests,
         )
     } else if (showModerationPanel) {
         ModerationPanelScreen(
@@ -610,17 +614,24 @@ fun ProfileScreen(
 private fun MyPublicationsFullScreen(
     onBack: () -> Unit,
     brandGreen: Color,
-    fieldBg: Color
+    fieldBg: Color,
+    mascotas: List<co.edu.uniqundio.tupataamiga.domain.model.Mascota>,
 ) {
     var selectedFilter by remember { mutableStateOf("Todas") }
 
-    val myPostsList = remember {
-        listOf(
-            MyPostUiModel("1", "Rex busca un hogar amoroso", "Adopción", "Verificada", "El Bosque, Armenia", "24 me gusta · 8 comentarios"),
-            MyPostUiModel("2", "Michi extraviado en el parque", "Perdidos", "Verificada", "Centro, Armenia", "15 me gusta · 12 comentarios"),
-            MyPostUiModel("3", "Perrito en la plaza", "Encontrados", "Pendiente", "Plaza de Bolívar", "3 me gusta · 1 comentario"),
-            MyPostUiModel("4", "Gata de raza persa", "Adopción", "Verificada", "La Castellana", "19 me gusta · 5 comentarios"),
-            MyPostUiModel("5", "Toby busca familia", "Adopción", "Finalizada", "Granada, Armenia", "30 me gusta · 14 comentarios")
+    val myPostsList = mascotas.map { mascota ->
+        MyPostUiModel(
+            id = mascota.id,
+            nombre = mascota.nombre,
+            tipo = mascota.categoria.name,
+            estadoModeracion = when (mascota.estado) {
+                co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion.APROBADO -> "Verificada"
+                co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion.PENDIENTE -> "Pendiente"
+                co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion.FINALIZADO -> "Finalizada"
+                co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion.RECHAZADO -> "Rechazada"
+            },
+            ubicacion = mascota.ubicacion,
+            interaccion = "${mascota.interesAdopcionCount} interesados · ${mascota.comentarios.size} comentarios",
         )
     }
 
@@ -839,13 +850,16 @@ private fun MyPublicationsFullScreen(
 private fun MyAdoptionInterestsFullScreen(
     onBack: () -> Unit,
     brandGreen: Color,
-    fieldBg: Color
+    fieldBg: Color,
+    mascotas: List<co.edu.uniqundio.tupataamiga.domain.model.Mascota>,
 ) {
-    val interestsList = remember {
-        listOf(
-            MyInterestUiModel("1", "Rex busca un hogar amoroso", "Perro · Labrador", "Carlos Herrera", "El Bosque, Armenia"),
-            MyInterestUiModel("2", "Pelusa en adopción responsable", "Gato · Angora", "Ana López", "Centro, Armenia"),
-            MyInterestUiModel("3", "Max perrito rescatado", "Perro · Mestizo", "María Fernanda", "Granada, Armenia")
+    val interestsList = mascotas.map { mascota ->
+        MyInterestUiModel(
+            id = mascota.id,
+            nombre = mascota.nombre,
+            raza = "${mascota.tipoAnimal.name} · ${mascota.raza}",
+            dueno = mascota.nombrePublicante,
+            ubicacion = mascota.ubicacion,
         )
     }
 
@@ -909,7 +923,7 @@ private fun MyAdoptionInterestsFullScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "3 Mascotas Guardadas",
+                            text = "${interestsList.size} Mascotas Guardadas",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = Color(0xFFC62828)

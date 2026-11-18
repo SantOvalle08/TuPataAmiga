@@ -1,5 +1,6 @@
 package co.edu.uniqundio.tupataamiga.data.remote.ai
 
+import co.edu.uniqundio.tupataamiga.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -18,7 +19,7 @@ class AIService @Inject constructor() {
     private val openRouterModel = "meta-llama/llama-3.2-3b-instruct:free"
     private val openRouterUrl = "https://openrouter.ai/api/v1/chat/completions"
 
-    var apiKey: String = ""
+    var apiKey: String = BuildConfig.OPENROUTER_API_KEY
 
     suspend fun llamarOpenRouter(promptUsuario: String, systemPrompt: String): String = withContext(Dispatchers.IO) {
         if (apiKey.isBlank()) {

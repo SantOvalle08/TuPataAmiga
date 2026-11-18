@@ -5,10 +5,11 @@ import androidx.lifecycle.viewModelScope
 import co.edu.uniqundio.tupataamiga.domain.model.Rol
 import co.edu.uniqundio.tupataamiga.domain.model.Usuario
 import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
+import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,10 +29,31 @@ data class ProfileUiState(
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    mascotaRepository: MascotaRepository,
 ) : ViewModel() {
 
-    val uiState: StateFlow<ProfileUiState> = userRepository.currentUser
-        .map { user ->
+    val myPublications: StateFlow<List<co.edu.uniqundio.tupataamiga.domain.model.Mascota>> =
+        combine(userRepository.currentUser, mascotaRepository.observeMascotas()) { user, mascotas ->
+            if (user == null) emptyList() else mascotas.filter { it.usuarioId == user.id }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList(),
+        )
+
+    val adoptionInterests: StateFlow<List<co.edu.uniqundio.tupataamiga.domain.model.Mascota>> =
+        combine(userRepository.currentUser, mascotaRepository.observeMascotas()) { user, mascotas ->
+            if (user == null) emptyList() else mascotas.filter { user.id in it.interesadosIds }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList(),
+        )
+
+    val uiState: StateFlow<ProfileUiState> = combine(
+        userRepository.currentUser,
+        mascotaRepository.observeMascotas(),
+    ) { user, mascotas ->
             if (user == null) {
                 ProfileUiState(
                     usuario = null,
@@ -46,6 +68,8 @@ class ProfileViewModel @Inject constructor(
                 )
             } else {
                 val esMod = user.rol == Rol.MODERADOR
+                val misMascotas = mascotas.filter { it.usuarioId == user.id }
+                val comentarios = misMascotas.sumOf { it.comentarios.size }
                 ProfileUiState(
                     usuario = user,
                     esInvitado = false,
@@ -53,9 +77,9 @@ class ProfileViewModel @Inject constructor(
                     nombreMostrar = user.nombre,
                     correoMostrar = user.correo,
                     rangoMostrar = if (esMod) "🛡️ Moderador" else "🐾 Amigo Animal",
-                    publicacionesContador = if (esMod) 12 else 5,
-                    comentariosContador = if (esMod) 48 else 18,
-                    puntosContador = if (esMod) 350 else 120,
+                    publicacionesContador = if (esMod) mascotas.size else misMascotas.size,
+                    comentariosContador = comentarios,
+                    puntosContador = misMascotas.size * 20 + comentarios * 5,
                 )
             }
         }

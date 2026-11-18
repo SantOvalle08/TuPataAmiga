@@ -4,6 +4,7 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniqundio.tupataamiga.domain.usecase.user.LoginUserUseCase
+import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUserUseCase: LoginUserUseCase
+    private val loginUserUseCase: LoginUserUseCase,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -23,8 +25,8 @@ class LoginViewModel @Inject constructor(
     fun onCorreoChanged(correo: String) {
         _uiState.update { state ->
             state.copy(
-                correo = correo,
-                correoError = validateEmail(correo)
+                correo = correo.trim(),
+                correoError = validateEmail(correo.trim())
             )
         }
     }
@@ -53,12 +55,12 @@ class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val user = loginUserUseCase(state.correo, state.clave)
+            val user = loginUserUseCase(state.correo.trim(), state.clave)
             _uiState.update { it.copy(isLoading = false) }
             if (user != null) {
                 onSuccess()
             } else {
-                onError("Credenciales inválidas o correo no registrado")
+                onError(userRepository.lastError.value ?: "Credenciales inválidas o correo no registrado")
             }
         }
     }

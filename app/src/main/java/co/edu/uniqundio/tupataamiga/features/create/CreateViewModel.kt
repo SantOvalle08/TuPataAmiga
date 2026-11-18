@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniqundio.tupataamiga.data.remote.ai.AIService
 import co.edu.uniqundio.tupataamiga.domain.model.*
+import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import co.edu.uniqundio.tupataamiga.domain.usecase.mascota.CreateMascotaUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,6 +24,7 @@ import javax.inject.Inject
 class CreateViewModel @Inject constructor(
     private val createMascotaUseCase: CreateMascotaUseCase,
     private val aiService: AIService,
+    private val userRepository: UserRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -159,7 +161,8 @@ class CreateViewModel @Inject constructor(
                     descripcion = state.descripcion,
                     imagenUrl = imagenFinal,
                     ubicacion = state.ubicacion,
-                    usuarioId = "user1",
+                    usuarioId = userRepository.currentUser.value?.id.orEmpty(),
+                    nombrePublicante = userRepository.currentUser.value?.nombre ?: "Usuario PataAmiga",
                     fechaCreacion = "Hace un momento",
                 )
 

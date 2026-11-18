@@ -1,12 +1,12 @@
 package co.edu.uniqundio.tupataamiga.data.repository.firebase
 
-import androidx.core.net.toUri
 import co.edu.uniqundio.tupataamiga.domain.model.Comentario
 import co.edu.uniqundio.tupataamiga.domain.model.EstadoPublicacion
 import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.auth.FirebaseAuth
+import co.edu.uniqundio.tupataamiga.data.remote.cloudinary.CloudinaryService
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -16,10 +16,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FirebaseMascotaRepositoryImpl @Inject constructor() : MascotaRepository {
+class FirebaseMascotaRepositoryImpl @Inject constructor(
+    private val cloudinaryService: CloudinaryService,
+) : MascotaRepository {
 
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private val storage: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
+    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     override fun observeMascotas(): Flow<List<Mascota>> = callbackFlow {
         val listener = firestore.collection("mascotas")
@@ -48,21 +50,19 @@ class FirebaseMascotaRepositoryImpl @Inject constructor() : MascotaRepository {
     }
 
     override suspend fun createMascota(mascota: Mascota) {
-        runCatching {
-            val docRef = firestore.collection("mascotas").document(mascota.id.ifEmpty { UUID.randomUUID().toString() })
-            var finalImageUrl = mascota.imagenUrl
-
-            if (finalImageUrl.startsWith("content://") || finalImageUrl.startsWith("file://")) {
-                runCatching {
-                    val storageRef = storage.reference.child("mascotas/${docRef.id}.jpg")
-                    storageRef.putFile(finalImageUrl.toUri()).await()
-                    finalImageUrl = storageRef.downloadUrl.await().toString()
-                }
-            }
-
-            val mascotaFinal = mascota.copy(id = docRef.id, imagenUrl = finalImageUrl)
-            docRef.set(mascotaFinal).await()
+        val docRef = firestore.collection("mascotas")
+            .document(mascota.id.ifEmpty { UUID.randomUUID().toString() })
+        val finalImageUrl = if (
+            mascota.imagenUrl.startsWith("content://") ||
+            mascota.imagenUrl.startsWith("file://")
+        ) {
+            cloudinaryService.uploadImage(android.net.Uri.parse(mascota.imagenUrl))
+        } else {
+            mascota.imagenUrl
         }
+
+        val mascotaFinal = mascota.copy(id = docRef.id, imagenUrl = finalImageUrl)
+        docRef.set(mascotaFinal).await()
     }
 
     override suspend fun updateMascota(mascota: Mascota) {
@@ -114,9 +114,21 @@ class FirebaseMascotaRepositoryImpl @Inject constructor() : MascotaRepository {
     }
 
     override suspend fun incrementarInteres(mascotaId: String) {
-        runCatching {
-            val mascota = getMascotaById(mascotaId) ?: return
-            firestore.collection("mascotas").document(mascotaId).update("interesAdopcionCount", mascota.interesAdopcionCount + 1).await()
-        }
+        val userId = auth.currentUser?.uid ?: return
+        val reference = firestore.collection("mascotas").document(mascotaId)
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(reference)
+            val interesados = snapshot.get("interesadosIds") as? List<*> ?: emptyList<Any>()
+            if (userId !in interesados) {
+                transaction.update(
+                    reference,
+                    mapOf(
+                        "interesadosIds" to com.google.firebase.firestore.FieldValue.arrayUnion(userId),
+                        "interesAdopcionCount" to com.google.firebase.firestore.FieldValue.increment(1),
+                    ),
+                )
+            }
+            null
+        }.await()
     }
 }

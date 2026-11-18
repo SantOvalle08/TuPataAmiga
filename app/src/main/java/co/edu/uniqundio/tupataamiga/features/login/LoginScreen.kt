@@ -49,13 +49,13 @@ fun LoginScreen(
 
     fun validarFormulario(): Boolean {
         var esValido = true
-        if (!uiState.correo.contains("@")) {
-            emailError = LocaleManager.tr("El correo debe incluir un '@'", "Email must include an '@'")
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(uiState.correo.trim()).matches()) {
+            emailError = LocaleManager.tr("Ingresa un correo válido", "Enter a valid email")
             esValido = false
         } else {
             emailError = null
         }
-        if (uiState.clave.length < 4) {
+        if (uiState.clave.length < 6) {
             passwordError = LocaleManager.tr("Ingresa una contraseña válida", "Enter a valid password")
             esValido = false
         } else {
@@ -224,9 +224,7 @@ fun LoginScreen(
                                 }
                             },
                             onError = { error ->
-                                emailError = LocaleManager.tr("Correo o contraseña incorrectos", "Incorrect email or password")
-                                passwordError = LocaleManager.tr("Correo o contraseña incorrectos", "Incorrect email or password")
-                                mostrarSnackbar(LocaleManager.tr("Correo o contraseña incorrectos", "Incorrect email or password"))
+                                mostrarSnackbar(error)
                             },
                         )
                     }

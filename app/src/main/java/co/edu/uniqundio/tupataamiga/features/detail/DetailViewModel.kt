@@ -81,7 +81,8 @@ class DetailViewModel @Inject constructor(
                     cuerpo = "$nombreAutor comentó en la publicación \"${mascotaActual?.nombre ?: "Mascota"}\"",
                     tiempo = "hace un momento",
                     tipo = "COMENTARIO",
-                    leido = false
+                    leido = false,
+                    usuarioId = mascotaActual?.usuarioId.orEmpty()
                 )
             )
 
@@ -102,7 +103,8 @@ class DetailViewModel @Inject constructor(
                     cuerpo = "Marcaste interés en adoptar a \"${mascotaActual?.nombre ?: "Mascota"}\"",
                     tiempo = "hace un momento",
                     tipo = "INTERES",
-                    leido = false
+                    leido = false,
+                    usuarioId = mascotaActual?.usuarioId.orEmpty()
                 )
             )
         }

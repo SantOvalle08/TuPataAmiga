@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import co.edu.uniqundio.tupataamiga.domain.model.Rol
 import co.edu.uniqundio.tupataamiga.domain.model.Usuario
 import co.edu.uniqundio.tupataamiga.domain.usecase.user.RegisterUserUseCase
+import co.edu.uniqundio.tupataamiga.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val registerUserUseCase: RegisterUserUseCase
+    private val registerUserUseCase: RegisterUserUseCase,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -107,7 +109,7 @@ class RegisterViewModel @Inject constructor(
             if (success) {
                 onSuccess()
             } else {
-                onError("El correo ya se encuentra registrado")
+                onError(userRepository.lastError.value ?: "No se pudo crear la cuenta.")
             }
         }
     }

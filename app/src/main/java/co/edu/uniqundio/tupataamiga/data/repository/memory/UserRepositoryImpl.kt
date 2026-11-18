@@ -24,6 +24,7 @@ class UserRepositoryImpl @Inject constructor(
 
     private val _currentUser = MutableStateFlow<Usuario?>(null)
     override val currentUser: StateFlow<Usuario?> = _currentUser.asStateFlow()
+    override val lastError: StateFlow<String?> = kotlinx.coroutines.flow.MutableStateFlow(null)
 
     init {
         loadUsers()
