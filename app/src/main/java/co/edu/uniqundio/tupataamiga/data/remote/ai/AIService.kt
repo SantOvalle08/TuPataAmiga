@@ -33,7 +33,6 @@ class AIService @Inject constructor() {
             conn.setRequestProperty("Authorization", "Bearer $apiKey")
             conn.setRequestProperty("HTTP-Referer", "https://tupataamiga.edu.co")
             conn.setRequestProperty("X-Title", "TuPataAmiga")
-            conn.setRequestProperty("Authorization", "Bearer $apiKey")
             conn.doOutput = true
             conn.connectTimeout = 8000
             conn.readTimeout = 8000
