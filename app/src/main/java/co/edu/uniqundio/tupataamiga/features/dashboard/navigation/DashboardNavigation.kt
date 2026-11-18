@@ -21,6 +21,7 @@ import co.edu.uniqundio.tupataamiga.features.create.CreateScreen
 import co.edu.uniqundio.tupataamiga.features.create.CreateViewModel
 import co.edu.uniqundio.tupataamiga.features.dashboard.AlertsScreen
 import co.edu.uniqundio.tupataamiga.features.dashboard.ProfileScreen
+import co.edu.uniqundio.tupataamiga.features.dashboard.ProfileViewModel
 import co.edu.uniqundio.tupataamiga.features.dashboard.MapViewModel
 import co.edu.uniqundio.tupataamiga.features.feed.FeedScreen
 import co.edu.uniqundio.tupataamiga.features.feed.FeedViewModel
@@ -31,6 +32,7 @@ fun DashboardNavigation(
     navController: NavHostController,
     feedViewModel: FeedViewModel,
     createViewModel: CreateViewModel,
+    profileViewModel: ProfileViewModel,
     onMascotaClick: (String) -> Unit,
     onLogout: () -> Unit = {},
     onDestinationChange: (DashboardDestination) -> Unit = {},
@@ -80,6 +82,7 @@ fun DashboardNavigation(
         }
         composable(DashboardRoutes.Profile.route) {
             ProfileScreen(
+                viewModel = profileViewModel,
                 onLogoutClick = onLogout,
             )
         }

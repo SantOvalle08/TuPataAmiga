@@ -123,6 +123,7 @@ fun ProfileScreen(
     } else if (showStatsScreen) {
         StatsAndAchievementsScreen(
             onBack = { showStatsScreen = false },
+            profileState = uiState,
         )
     } else {
         Scaffold(
@@ -286,7 +287,7 @@ fun ProfileScreen(
                             icon = Icons.Default.AdminPanelSettings,
                             iconTint = brandGreen,
                             title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Panel de Moderación", "Moderation Panel"),
-                            countBadge = if (uiState.esModerador) "3" else null,
+                            countBadge = if (uiState.esModerador) uiState.pendientesContador.toString() else null,
                             onClick = {
                                 if (uiState.esModerador) {
                                     showModerationPanel = true
@@ -317,7 +318,7 @@ fun ProfileScreen(
                             icon = Icons.Default.Favorite,
                             iconTint = Color(0xFFE53935),
                             title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Mis intereses en adopción", "My Adoption Interests"),
-                            countBadge = if (!uiState.esInvitado) "3" else null,
+                            countBadge = if (!uiState.esInvitado) uiState.interesesContador.toString() else null,
                             onClick = {
                                 if (uiState.esInvitado) {
                                     scope.launch { snackbarHostState.showSnackbar("Inicia sesión para ver tus mascotas guardadas") }
@@ -332,7 +333,7 @@ fun ProfileScreen(
                             icon = Icons.Default.EmojiEvents,
                             iconTint = Color(0xFFF57F17),
                             title = co.edu.uniqundio.tupataamiga.ui.theme.LocaleManager.tr("Logros e insignias", "Achievements & Badges"),
-                            countBadge = if (!uiState.esInvitado) "4" else null,
+                            countBadge = if (!uiState.esInvitado) uiState.insigniasDesbloqueadas.toString() else null,
                             onClick = {
                                 if (uiState.esInvitado) {
                                     scope.launch { snackbarHostState.showSnackbar("Inicia sesión para desbloquear insignias") }

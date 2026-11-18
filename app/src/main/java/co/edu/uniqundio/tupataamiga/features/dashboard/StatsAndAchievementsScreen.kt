@@ -34,7 +34,8 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsAndAchievementsScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    profileState: ProfileUiState = ProfileUiState(),
 ) {
     val brandGreen = Color(0xFF0F4C25)
 
@@ -80,7 +81,7 @@ fun StatsAndAchievementsScreen(
                     MetricCard(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Campaign,
-                        number = "3",
+                        number = profileState.activasContador.toString(),
                         label = "Activas",
                         bgColor = Color(0xFFFDEAE1),
                         textColor = Color(0xFFC62828)
@@ -88,7 +89,7 @@ fun StatsAndAchievementsScreen(
                     MetricCard(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.CheckCircle,
-                        number = "4",
+                        number = profileState.verificadasContador.toString(),
                         label = "Verificadas",
                         bgColor = Color(0xFFE5F7ED),
                         textColor = Color(0xFF2E7D32)
@@ -98,7 +99,7 @@ fun StatsAndAchievementsScreen(
                     MetricCard(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.HourglassEmpty,
-                        number = "2",
+                        number = profileState.pendientesContador.toString(),
                         label = "Pendientes",
                         bgColor = Color(0xFFFFF6E5),
                         textColor = Color(0xFFE65100)
@@ -106,7 +107,7 @@ fun StatsAndAchievementsScreen(
                     MetricCard(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Flag,
-                        number = "1",
+                        number = profileState.finalizadasContador.toString(),
                         label = "Finalizadas",
                         bgColor = Color(0xFFF2ECE9),
                         textColor = Color(0xFF616161)
@@ -144,7 +145,7 @@ fun StatsAndAchievementsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Amigo Animal",
+                                    text = profileState.nivelActual,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 20.sp,
                                     color = Color.Black
@@ -154,7 +155,7 @@ fun StatsAndAchievementsScreen(
 
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
-                                text = "142",
+                                text = profileState.puntosContador.toString(),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 28.sp,
                                 color = brandGreen
@@ -169,14 +170,14 @@ fun StatsAndAchievementsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Amigo Animal", fontSize = 11.sp, color = Color.Gray)
-                        Text(text = "Protector (200 pts)", fontSize = 11.sp, color = Color.Gray)
+                        Text(text = profileState.nivelActual, fontSize = 11.sp, color = Color.Gray)
+                        Text(text = "${profileState.puntosSiguienteNivel} pts para el siguiente nivel", fontSize = 11.sp, color = Color.Gray)
                     }
 
                     Spacer(modifier = Modifier.height(6.dp))
 
                     LinearProgressIndicator(
-                        progress = { 0.71f },
+                        progress = { profileState.progresoNivel },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(10.dp)
@@ -188,7 +189,11 @@ fun StatsAndAchievementsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "58 puntos para el siguiente nivel",
+                        text = if (profileState.puntosContador >= 1000) {
+                            "Nivel máximo alcanzado"
+                        } else {
+                            "${profileState.puntosSiguienteNivel - profileState.puntosContador} puntos para el siguiente nivel"
+                        },
                         fontSize = 12.sp,
                         color = brandGreen,
                         fontWeight = FontWeight.Medium
@@ -215,7 +220,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.Pets,
                         title = "Amigo Animal",
                         pts = "0+",
-                        isSelected = true,
+                        isSelected = profileState.nivelActual == "Amigo Animal",
                         brandGreen = brandGreen
                     )
                     LevelCard(
@@ -223,7 +228,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.Shield,
                         title = "Protector",
                         pts = "200+",
-                        isSelected = false,
+                        isSelected = profileState.nivelActual == "Protector",
                         brandGreen = brandGreen
                     )
                     LevelCard(
@@ -231,7 +236,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.Star,
                         title = "Guardián",
                         pts = "500+",
-                        isSelected = false,
+                        isSelected = profileState.nivelActual == "Guardián",
                         brandGreen = brandGreen
                     )
                     LevelCard(
@@ -239,7 +244,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.Person,
                         title = "Héroe",
                         pts = "1000+",
-                        isSelected = false,
+                        isSelected = profileState.nivelActual == "Héroe",
                         brandGreen = brandGreen
                     )
                 }
@@ -266,7 +271,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.Pets,
                         bgColor = Color(0xFFFFF6E5),
                         iconTint = brandGreen,
-                        isUnlocked = true
+                        isUnlocked = profileState.publicacionesContador >= 1
                     )
                     BadgeCard(
                         modifier = Modifier.weight(1f),
@@ -275,7 +280,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.CheckCircle,
                         bgColor = Color(0xFFE5F7ED),
                         iconTint = Color(0xFF2E7D32),
-                        isUnlocked = true
+                        isUnlocked = profileState.verificadasContador >= 5
                     )
                     BadgeCard(
                         modifier = Modifier.weight(1f),
@@ -284,7 +289,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.Favorite,
                         bgColor = Color(0xFFFDEAE1),
                         iconTint = Color(0xFFE53935),
-                        isUnlocked = true
+                        isUnlocked = profileState.interesesContador >= 3
                     )
                 }
 
@@ -308,7 +313,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.Person,
                         bgColor = Color(0xFFF5ECE8),
                         iconTint = Color.Gray,
-                        isUnlocked = false
+                        isUnlocked = profileState.puntosContador >= 1000
                     )
                     BadgeCard(
                         modifier = Modifier.weight(1f),
@@ -317,7 +322,7 @@ fun StatsAndAchievementsScreen(
                         icon = Icons.Default.Comment,
                         bgColor = Color(0xFFF5ECE8),
                         iconTint = Color.Gray,
-                        isUnlocked = false
+                        isUnlocked = profileState.comentariosContador >= 50
                     )
                 }
             }

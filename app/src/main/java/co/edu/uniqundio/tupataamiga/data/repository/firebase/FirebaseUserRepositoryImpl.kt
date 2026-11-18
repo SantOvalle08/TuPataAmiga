@@ -49,7 +49,10 @@ class FirebaseUserRepositoryImpl @Inject constructor() : UserRepository {
             loadUser(firebaseUser.uid, correo, firebaseUser.displayName)
             _currentUser.value
         } catch (e: Exception) {
-            _lastError.value = authErrorMessage(e)
+            _lastError.value = authErrorMessage(
+                error = e,
+                fallback = "No se pudo iniciar sesión. Inténtalo nuevamente.",
+            )
             null
         }
     }
@@ -75,7 +78,7 @@ class FirebaseUserRepositoryImpl @Inject constructor() : UserRepository {
             if (createdUser != null) {
                 runCatching { createdUser.delete().await() }
             }
-            _lastError.value = authErrorMessage(e)
+            _lastError.value = registrationErrorMessage(e)
             Log.e("FirebaseUserRepository", "No se pudo registrar el usuario", e)
             false
         }
@@ -87,7 +90,10 @@ class FirebaseUserRepositoryImpl @Inject constructor() : UserRepository {
             auth.sendPasswordResetEmail(correo).await()
             true
         } catch (e: Exception) {
-            _lastError.value = authErrorMessage(e)
+            _lastError.value = authErrorMessage(
+                error = e,
+                fallback = "No se pudo enviar el correo de recuperación.",
+            )
             false
         }
     }
@@ -120,13 +126,49 @@ class FirebaseUserRepositoryImpl @Inject constructor() : UserRepository {
         return user
     }
 
-    private fun authErrorMessage(error: Exception): String {
-        return when ((error as? FirebaseAuthException)?.errorCode) {
+    private fun authErrorMessage(error: Exception, fallback: String): String {
+        val errorCode = (error as? FirebaseAuthException)?.errorCode
+        return when (errorCode) {
             "ERROR_EMAIL_ALREADY_IN_USE" -> "Este correo ya está registrado."
             "ERROR_INVALID_EMAIL" -> "El correo no es válido."
             "ERROR_WEAK_PASSWORD" -> "La contraseña debe tener al menos 6 caracteres."
             "ERROR_NETWORK_REQUEST_FAILED" -> "No hay conexión con Firebase."
-            else -> error.message ?: "Firebase rechazó la operación."
+            "ERROR_WRONG_PASSWORD",
+            "ERROR_INVALID_CREDENTIAL",
+            "ERROR_INVALID_LOGIN_CREDENTIALS",
+            "ERROR_USER_MISMATCH",
+            "ERROR_USER_NOT_FOUND" -> "El correo o la contraseña son incorrectos."
+            "ERROR_USER_DISABLED" -> "Esta cuenta está deshabilitada. Contacta al administrador."
+            "ERROR_TOO_MANY_REQUESTS" -> "Demasiados intentos. Espera unos minutos y vuelve a intentarlo."
+            "ERROR_REQUIRES_RECENT_LOGIN" -> "Por seguridad, vuelve a iniciar sesión e inténtalo otra vez."
+            else -> {
+                val message = error.message.orEmpty().lowercase()
+                if (
+                    "supplied auth credential" in message ||
+                    "invalid credential" in message ||
+                    "wrong password" in message ||
+                    "password is invalid" in message
+                ) {
+                    "El correo o la contraseña son incorrectos."
+                } else {
+                    fallback
+                }
+            }
+        }
+    }
+
+    private fun registrationErrorMessage(error: Exception): String {
+        val authMessage = authErrorMessage(
+            error = error,
+            fallback = "",
+        )
+        if (authMessage.isNotBlank()) return authMessage
+        return if (error is FirebaseAuthException) {
+            "No se pudo crear la cuenta. Verifica los datos e inténtalo nuevamente."
+        } else if (error is com.google.firebase.FirebaseException) {
+            "No se pudo guardar el perfil en Firebase. Revisa tu conexión e inténtalo nuevamente."
+        } else {
+            "No se pudo completar el registro. Inténtalo nuevamente."
         }
     }
 
