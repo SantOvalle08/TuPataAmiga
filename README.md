@@ -107,7 +107,7 @@ co.edu.uniqundio.tupataamiga/
 
 Proyecto desarrollado en el marco de formación académica en la **Universidad del Quindío** (`co.edu.uniqundio.tupataamiga`).
 
-- **Desarrollador:** Santiago & Equipo TuPataAmiga
+- **Desarrollador:** Santiago Ovalle & Juan Esteban Cuervo
 - **Ubicación:** Armenia, Quindío, Colombia
 
 ---
