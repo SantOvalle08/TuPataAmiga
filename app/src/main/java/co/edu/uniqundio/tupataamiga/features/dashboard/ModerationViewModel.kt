@@ -7,9 +7,12 @@ import co.edu.uniqundio.tupataamiga.domain.model.Mascota
 import co.edu.uniqundio.tupataamiga.domain.model.Notificacion
 import co.edu.uniqundio.tupataamiga.domain.repository.MascotaRepository
 import co.edu.uniqundio.tupataamiga.domain.repository.NotificacionRepository
+import co.edu.uniqundio.tupataamiga.data.remote.ai.AIService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -19,7 +22,11 @@ import javax.inject.Inject
 class ModerationViewModel @Inject constructor(
     private val mascotaRepository: MascotaRepository,
     private val notificacionRepository: NotificacionRepository,
+    private val aiService: AIService,
 ) : ViewModel() {
+
+    private val _aiSummaries = MutableStateFlow<Map<String, String>>(emptyMap())
+    val aiSummaries: StateFlow<Map<String, String>> = _aiSummaries.asStateFlow()
 
     val pendingPosts: StateFlow<List<Mascota>> = mascotaRepository.observeMascotas()
         .map { list -> list.filter { it.estado == EstadoPublicacion.PENDIENTE } }
@@ -70,6 +77,20 @@ class ModerationViewModel @Inject constructor(
                     usuarioId = mascota?.usuarioId.orEmpty()
                 )
             )
+        }
+
+    }
+
+    fun cargarResumenIa(mascota: Mascota) {
+        if (_aiSummaries.value.containsKey(mascota.id)) return
+        viewModelScope.launch {
+            val resumen = aiService.generarResumenModeracion(
+                nombre = mascota.nombre,
+                categoria = mascota.categoria.name,
+                descripcion = mascota.descripcion,
+                raza = mascota.raza,
+            )
+            _aiSummaries.value = _aiSummaries.value + (mascota.id to resumen)
         }
     }
 }
