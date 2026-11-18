@@ -1,6 +1,7 @@
 package co.edu.uniqundio.tupataamiga.features.detail
 
 import android.preference.PreferenceManager
+import android.location.Geocoder
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -31,7 +32,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import co.edu.uniqundio.tupataamiga.ui.theme.abrirComoLlegar
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -72,14 +75,22 @@ fun DetailScreen(
                 CircularProgressIndicator(color = brandGreen)
             }
         } else {
-            // Coordenadas y dirección (si tu modelo Mascota ya tiene lat/lng/ubicacion, úsalos aquí)
-            val (direccionMascota, latMascota, lngMascota) = remember(mascota.id) {
-                when (mascota.id) {
-                    "1" -> Triple("El Bosque, Armenia, Quindío", 4.5389, -75.6781)
-                    "2" -> Triple("Centro, Armenia, Quindío", 4.5338, -75.6811)
-                    "3" -> Triple("Plaza de Bolívar, Armenia", 4.5321, -75.6834)
-                    "4" -> Triple("La Castellana, Armenia", 4.5456, -75.6723)
-                    else -> Triple("Armenia, Quindío", 4.5375, -75.6780)
+            var direccionMascota by remember(mascota.id) {
+                mutableStateOf(mascota.ubicacion)
+            }
+            var latMascota by remember(mascota.id) { mutableStateOf(4.5375) }
+            var lngMascota by remember(mascota.id) { mutableStateOf(-75.6780) }
+            LaunchedEffect(mascota.id, mascota.ubicacion) {
+                val resultado = withContext(Dispatchers.IO) {
+                    runCatching {
+                        Geocoder(context).getFromLocationName(mascota.ubicacion, 1)
+                            ?.firstOrNull()
+                    }.getOrNull()
+                }
+                if (resultado != null) {
+                    direccionMascota = resultado.getAddressLine(0) ?: mascota.ubicacion
+                    latMascota = resultado.latitude
+                    lngMascota = resultado.longitude
                 }
             }
 

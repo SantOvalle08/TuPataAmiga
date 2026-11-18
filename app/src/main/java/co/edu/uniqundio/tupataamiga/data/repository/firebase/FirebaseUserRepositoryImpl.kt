@@ -55,6 +55,21 @@ class FirebaseUserRepositoryImpl @Inject constructor() : UserRepository {
             )
             null
         }
+
+    }
+
+    override suspend fun getUserById(id: String): Usuario? {
+        val document = firestore.collection("usuarios").document(id).get().await()
+        val email = document.getString("correo").orEmpty()
+        return Usuario(
+            id = id,
+            nombre = document.getString("nombre") ?: email.substringBefore("@"),
+            correo = email,
+            rol = runCatching { Rol.valueOf(document.getString("rol").orEmpty()) }
+                .getOrDefault(Rol.USUARIO),
+            direccion = document.getString("direccion").orEmpty(),
+            fotoUrl = document.getString("fotoUrl").orEmpty(),
+        )
     }
 
     override suspend fun register(usuario: Usuario, clave: String): Boolean {
